@@ -21,6 +21,6 @@ def valid_login(username, password):
     else:
         return False
 
-def get_user(username):
-    user = User.query.filter(User.username==username).first()
-    return user
+# def get_user(username):
+#     user = User.query.filter(User.username==username).first()
+#     return user

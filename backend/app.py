@@ -38,11 +38,27 @@ def login():
 #获取当前登录用户的用户名
 @app.route('/api/get_user/',methods=['GET'])
 def get_user():
-    user=get_user(session.get('username'))
+    user = User.query.filter(User.username==session['username']).first()
+    if user==None: 
+        response={
+            'username':'',
+            'password':'',
+            'email':''
+        }
+    else:
+        response={
+            'username':user.username,
+            'password':user.password,
+            'email':user.email
+        }
+    return jsonify(response)
+
+@app.route('/api/logout/',methods=['GET'])
+def logout():
+    msg='退出成功'
+    session['username']=None
     response={
-        'username':user.username,
-        'password':user.password,
-        'email':user.email
+        'message':msg
     }
     return jsonify(response)
 
@@ -80,6 +96,6 @@ def getalluser():
             'email':user.email
         }
         res.append(context)
-    return session.get('username')
+    return jsonify(res)
 if __name__ == '__main__':
     app.run(debug = True)
