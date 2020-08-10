@@ -97,5 +97,29 @@ def getalluser():
         }
         res.append(context)
     return jsonify(res)
+
+
+# 修改密码
+@app.route('/api/modifypwd/', methods=['POST'])
+def modifypwd():
+    msg = None
+    if request.method == 'POST':
+        user = User.query.filter(User.username==session['username']).first()
+        session['password'] = user.password
+        if (session['password']!=request.form['oldpassword']):
+            msg = '原密码错误！'
+        elif(request.form['newpassword1']!=request.form['newpassword2']):
+            msg = '两次密码不一致！'
+        else:
+            session['password']=request.form['newpassword1']
+            db.session.query(User).filter(User.username == session['username']).update({"password":request.form['newpassword1']})
+            db.session.commit()
+            msg = 'success'
+    
+    response={
+        'message':msg
+    }
+    return jsonify(response)
+
 if __name__ == '__main__':
     app.run(debug = True)
