@@ -168,7 +168,7 @@ def get_doccontent():
         msg='ok'
         #print(str(document.creator_id)+'/')
         #print(str(user.id)+'/')
-        if str(document.creator_id)==str(user.id):
+        if (document!=None) and (str(document.creator_id)==str(user.id)):
             msg="成功找到该文档"
             mcontent=document.content
         else:
@@ -179,6 +179,7 @@ def get_doccontent():
         'content':mcontent
     }
     return jsonify(response)
+
 '''
 #修改文档
 @app.route('/api/modify_doc/', methods=['POST'])
