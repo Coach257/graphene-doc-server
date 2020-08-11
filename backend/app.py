@@ -116,7 +116,7 @@ def modifypwd():
             msg = '两次密码不一致！'
         else:
             session['password']=request.form['newpassword1']
-            get_user_byusername(session['username']).update({"password":request.form['newpassword1']})
+            db.session.query(User).filter(User.username==session['username']).update({"password":request.form['newpassword1']})
             db.session.commit()
             msg = 'success'
 
@@ -141,6 +141,7 @@ def creategroup():
    }
    return jsonify(response)
 
+# 只显示我是创建者的group
 @app.route('/api/mygroup/',methods=['GET'])
 def mygroup():
     user=get_user_byusername(session['username'])
@@ -218,6 +219,7 @@ def get_doccontent():
         'content':mcontent
     }
     return jsonify(response)
+
 
 '''
 #修改文档
