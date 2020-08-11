@@ -39,8 +39,8 @@ class GroupMember(db.Model):
     def __repr__(self):
         return "<GroupMember %r>" %self.id
 
-class Docs(db.Model):
-    __tablename__='Docs'
+class Document(db.Model):
+    __tablename__='Document'
     id = db.Column(db.Integer, primary_key=True)
     title = db.Column(db.String(80), unique=True)
     creator_id=db.Column(db.Integer)
