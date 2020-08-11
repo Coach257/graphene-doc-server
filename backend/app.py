@@ -221,27 +221,29 @@ def get_doccontent():
     return jsonify(response)
 
 
-'''
 #修改文档
 @app.route('/api/modify_doc/', methods=['POST'])
 def modify_doc():
     msg=''
     if request.method == 'POST':
-        title = Document.query.filter(Document.title == request.form['title']).first()
+        document = Document.query.filter(Document.id == request.form['ContentID']).first()
         user = User.query.filter(User.username==session['username']).first()
-        creator_id=user.id
-        now=datetime.now()
-        content=request.form['content']
-        msg="成功创建文档！"
-        id = get_newid()
-        newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content)
-        db.session.add(newDocument)
-        db.session.commit()
+        if (document!=None) and (str(document.creator_id)==str(user.id)):
+            msg="成功修改"
+            now=datetime.datetime.now()
+            content=request.form['content']
+            id = get_newid()
+            db.session.query(Document).filter(Document.id==request.form['ContentID']).update({"content":content})
+            #修改时间更新
+            #待解决，因为缺少修改时间这个字段
+            #db.session.query(Document).filter(Document.id==request.form['ContentID']).update({"content":content})
+            db.session.commit()
+        else:
+            msg="没有找到该文档"
     response={
         'message':msg
     }
     return jsonify(response)
-'''
 
 if __name__ == '__main__':
     app.run(debug = True)
