@@ -7,7 +7,7 @@ from models import *
 from manage import *
 from flask_cors import CORS
 import config
-from datetime import datetime
+import datetime,time
 
 app = Flask(__name__,
             static_folder = "../frontend/dist/static",
@@ -37,7 +37,7 @@ def login():
     }
     return jsonify(response)
 
-#获取当前登录用户的用户名
+#获取当前登录用户
 @app.route('/api/get_user/',methods=['GET'])
 def get_user():
     if session['username']==None: 
@@ -98,7 +98,6 @@ def getalluser():
         res.append(context)
     return jsonify(res)
 
-
 # 修改密码
 @app.route('/api/modifypwd/', methods=['POST'])
 def modifypwd():
@@ -124,7 +123,8 @@ def modifypwd():
 @app.route('/api/creategroup/',methods=['POST'])
 def creategroup():
    user=get_user_byusername(session['username'])
-   newGroup=Group(groupname=request.form['groupname'],leaderid=user.id,createdtime=datetime.datetime.now(),description=request.form['description'])
+   id=get_newid()
+   newGroup=Group(id=id,groupname=request.form['groupname'],leaderid=user.id,createdtime=datetime.datetime.now(),description=request.form['description'])
    db.session.add(newGroup)
    db.session.commit()
    response={
@@ -132,74 +132,34 @@ def creategroup():
    }
    return jsonify(response)
 
-####################################
-##########Document操作###############
-####################################
+@app.route('/api/mygroup/',methods=['GET'])
+def mygroup():
+    user=get_user_byusername(session['username'])
+    all_group=Group.query.filter(Group.leaderid==user.id)
+    res=[]
+    context={}
+    for group in all_group:
+        context={
+            'groupid':group.id,
+            'groupname':group.groupname,
+            'description':group.description,
+            'createdtime':group.createdtime
+        }
+        res.append(context)
+    return jsonify(res)
 
-#创建文档
-@app.route('/api/create_doc/', methods=['POST'])
-def create_doc():
-    msg=''
-    if request.method == 'POST':
-        user = User.query.filter(User.username==session['username']).first()
-        creator_id=user.id
-        now=datetime.now()
-        content=request.form['content']
-        msg="成功创建文档！"
-        id = get_newid()
-        newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content)
-        db.session.add(newDocument)
-        db.session.commit()
+@app.route('/api/addgroupmember/',methods=['POST'])
+def addgroupmember():
+    userid=request.form['userid']
+    groupid=request.form['groupid']
+    id=get_newid()
+    newGroupMember=GroupMember(id=id,user_id=userid,group_id=groupid)
+    db.session.add(newGroupMember)
+    db.session.commit()
     response={
-        'message':msg
+        'message':'添加成员成功！'
     }
     return jsonify(response)
-
-#获取文档
-@app.route('/api/get_doccontent/', methods=['POST'])
-def get_doccontent():
-    msg=''
-    mcontent=''
-    if request.method == 'POST':
-        document = Document.query.filter(Document.title == request.form['title']).first()
-        user = User.query.filter(User.username==session['username']).first()
-        #判断用户是否有权限查看该文档
-        #未完善，只是初步的判断
-        msg='ok'
-        #print(str(document.creator_id)+'/')
-        #print(str(user.id)+'/')
-        if str(document.creator_id)==str(user.id):
-            msg="成功找到该文档"
-            mcontent=document.content
-        else:
-            msg="没有找到该文档"
-            mcontent=""
-    response={
-        'message':msg,
-        'content':mcontent
-    }
-    return jsonify(response)
-'''
-#修改文档
-@app.route('/api/modify_doc/', methods=['POST'])
-def modify_doc():
-    msg=''
-    if request.method == 'POST':
-        title = Document.query.filter(Document.title == request.form['title']).first()
-        user = User.query.filter(User.username==session['username']).first()
-        creator_id=user.id
-        now=datetime.now()
-        content=request.form['content']
-        msg="成功创建文档！"
-        id = get_newid()
-        newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content)
-        db.session.add(newDocument)
-        db.session.commit()
-    response={
-        'message':msg
-    }
-    return jsonify(response)
-'''
 
 if __name__ == '__main__':
     app.run(debug = True)
