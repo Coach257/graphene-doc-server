@@ -226,17 +226,17 @@ def get_doccontent():
 def modify_doc():
     msg=''
     if request.method == 'POST':
-        document = Document.query.filter(Document.id == request.form['ContentID']).first()
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
         user = User.query.filter(User.username==session['username']).first()
         if (document!=None) and (str(document.creator_id)==str(user.id)):
             msg="成功修改"
             now=datetime.datetime.now()
             content=request.form['content']
             id = get_newid()
-            db.session.query(Document).filter(Document.id==request.form['ContentID']).update({"content":content})
+            db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"content":content})
             #修改时间更新
             #待解决，因为缺少修改时间这个字段
-            #db.session.query(Document).filter(Document.id==request.form['ContentID']).update({"content":content})
+            #db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"content":content})
             db.session.commit()
         else:
             msg="没有找到该文档"
