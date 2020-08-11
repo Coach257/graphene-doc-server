@@ -24,7 +24,7 @@ class Group(db.Model):
     id=db.Column(db.Integer,primary_key=True)
     groupname=db.Column(db.String(80))
     leaderid=db.Column(db.Integer)
-    createdtime=db.Column(db.Date)
+    createdtime=db.Column(db.DateTime)
     description=db.Column(db.String(80))
     
     def __repr__(self):
@@ -36,13 +36,15 @@ class GroupMember(db.Model):
     group_id=db.Column(db.Integer)
     user_id=db.Column(db.Integer)
 
-class Document(db.Model):
-    __tablename__='Document'
-    docid = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(80), unique=True)
-    creator_id=db.Column(db.Integer)
-    created_time=db.Column(db.DateTime, default=datetime.now)
-    content=db.Column(db.String(100000005))
+    def __repr__(self):
+        return "<GroupMember %r>" %self.id
 
-    def __repr__(self):
-        return "<Document %r>" % self.title
+class Docs(db.Model):
+    __tablename__='Docs'
+    id = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(80), unique=True)
+    creator_id=db.Column(db.Integer)
+    created_time=db.Column(db.DateTime)
+    content=db.Column(db.String(100000005))
+    def __repr__(self):
+        return "<Document %r>" % self.title
