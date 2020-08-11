@@ -7,7 +7,7 @@ from models import *
 from manage import *
 from flask_cors import CORS
 import config
-
+import datetime,time
 
 app = Flask(__name__,
             static_folder = "../frontend/dist/static",
@@ -37,7 +37,7 @@ def login():
     }
     return jsonify(response)
 
-#获取当前登录用户的用户名
+#获取当前登录用户
 @app.route('/api/get_user/',methods=['GET'])
 def get_user():
     if session['username']==None: 
@@ -47,7 +47,7 @@ def get_user():
             'email':''
         }
     else:
-        user = get_user_byusername(session['username']).first()
+        user = get_user_byusername(session['username'])
         response={
             'username':user.username,
             'password':user.password,
@@ -124,13 +124,31 @@ def modifypwd():
 @app.route('/api/creategroup/',methods=['POST'])
 def creategroup():
    user=get_user_byusername(session['username'])
-   newGroup=Group(groupname=request.form['groupname'],leaderid=user.id,createdtime=datetime.datetime.now(),description=request.form['description'])
+   id=get_newid()
+   newGroup=Group(id=id,groupname=request.form['groupname'],leaderid=user.id,createdtime=datetime.datetime.now(),description=request.form['description'])
    db.session.add(newGroup)
    db.session.commit()
    response={
        'message':'创建团队成功！'
    }
    return jsonify(response)
+
+@app.route('/api/mygroup/',methods=['GET'])
+def mygroup():
+    user=get_user_byusername(session['username'])
+    all_group=Group.query.filter(Group.leaderid==user.id)
+    res=[]
+    context={}
+    for group in all_group:
+        context={
+            'groupid':group.id,
+            'groupname':group.groupname,
+            'description':group.description,
+            'createdtime':group.createdtime
+        }
+        res.append(context)
+    return jsonify(res)
+
 
 
 if __name__ == '__main__':
