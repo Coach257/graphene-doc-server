@@ -127,12 +127,15 @@ def modify_user_info():
 ########## Group 操作 ###############
 ####################################
 
+# 已登录的用户创建group，设置group的简介
 @app.route('/api/creategroup/',methods=['POST'])
 def creategroup():
    user=get_user_byusername(session['username'])
    id=get_newid()
    newGroup=Group(id=id,groupname=request.form['groupname'],leaderid=user.id,createdtime=datetime.datetime.now(),description=request.form['description'])
+   newGroupMember=GroupMember(id=id,group_id=id,user_id=user.id)
    db.session.add(newGroup)
+   db.session.add(newGroupMember)
    db.session.commit()
    response={
        'message':'创建团队成功！'
@@ -156,6 +159,7 @@ def mygroup():
         res.append(context)
     return jsonify(res)
 
+# 在我的group中添加用户，这里的用户是前端判断好的不在该group中的user
 @app.route('/api/addgroupmember/',methods=['POST'])
 def addgroupmember():
     userid=request.form['userid']
@@ -168,6 +172,34 @@ def addgroupmember():
         'message':'添加成员成功！'
     }
     return jsonify(response)
+
+# 团队创建者想要邀请需要先检索用户，根据用户名检索，返回所有不在该团队中的检索用户
+@app.route('/api/queryuser/',methods=['POST'])
+def queryuser():
+    keyword=request.form['keyword']
+    groupid=request.form['groupid']
+    res=[]
+    all_user=get_user_bykeyword(keyword)
+    all_group_user=get_user_ingroup(groupid)
+    for user in all_user:
+        check=1
+        for group_user in all_group_user:
+            if group_user.id==user.id:
+                check=0
+                continue
+        if check==1:
+            res.append(user_to_content(user))
+    return jsonify(res)
+
+# 显示该团队下的成员
+@app.route('/api/get_user_bygroup/',methods=['POST'])
+def get_user_bygroup():
+    all_group_user=get_user_ingroup(request.form['groupid'])
+    res=[]
+    for user in all_group_user:
+       res.append(user_to_content(user))
+    return jsonify(res) 
+
 
 ####################################
 ########## Document操作 ###############
