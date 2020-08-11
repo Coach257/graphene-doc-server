@@ -44,7 +44,7 @@ def login():
 #获取当前登录用户
 @app.route('/api/get_user/',methods=['GET'])
 def get_user():
-    if session['username']==None: 
+    if session==None or session['username']==None or session['username']=='' : 
         response={
             'username':'',
             'password':'',
@@ -103,23 +103,21 @@ def getalluser():
     return jsonify(res)
 
 
-# 修改密码
-@app.route('/api/modifypwd/', methods=['POST'])
-def modifypwd():
+# 修改User Info
+@app.route('/api/modify_user_info/', methods=['POST'])
+def modify_user_info():
     msg = None
     if request.method == 'POST':
         user = User.query.filter(User.username==session['username']).first()
-        session['password'] = user.password
-        if (session['password']!=request.form['oldpassword']):
+        if (user.password!=request.form['oldpassword']):
             msg = '原密码错误！'
-        elif(request.form['newpassword1']!=request.form['newpassword2']):
-            msg = '两次密码不一致！'
         else:
-            session['password']=request.form['newpassword1']
-            db.session.query(User).filter(User.username==session['username']).update({"password":request.form['newpassword1']})
+            db.session.query(User).filter(User.username==session['username']).update({"password":request.form['new_password1']})
+            db.session.query(User).filter(User.username==session['username']).update({"username":request.form['new_username']})
+            db.session.query(User).filter(User.username==session['username']).update({"email":request.form['new_email']})
             db.session.commit()
+            session['username']=request.form['new_username']
             msg = 'success'
-
     response={
         'message':msg
     }
