@@ -8,7 +8,6 @@ from manage import *
 from flask_cors import CORS
 import config
 import datetime,time
-
 app = Flask(__name__,
             static_folder = "../frontend/dist/static",
             template_folder = "../frontend/dist")
@@ -66,7 +65,7 @@ def get_user_byid():
 
 @app.route('/api/logout/',methods=['GET'])
 def logout():
-    msg='退出成功'
+    msg='success'
     session['username']=None
     response={
         'message':msg
@@ -83,7 +82,7 @@ def regist():
         if(username or email):
             msg='用户名或邮箱不能重复！'
         else:
-            msg="成功注册！"
+            msg="success"
             id=get_newid()
             newUser=User(id=id, username=request.form['username'], password=request.form['password'], email=request.form['email'])
             db.session.add(newUser)
@@ -115,7 +114,7 @@ def modify_user_info():
     if request.method == 'POST':
         user = User.query.filter(User.username==session['username']).first()
         if (user.password!=request.form['oldpassword']):
-            msg = '原密码错误！'
+            msg = 'fail'
         else:
             db.session.query(User).filter(User.username==session['username']).update({"password":request.form['new_password1']})
             db.session.query(User).filter(User.username==session['username']).update({"username":request.form['new_username']})
@@ -127,6 +126,7 @@ def modify_user_info():
         'message':msg
     }
     return jsonify(response)
+
 
 ####################################
 ########## Group 操作 ###############
@@ -174,7 +174,7 @@ def addgroupmember():
     db.session.add(newGroupMember)
     db.session.commit()
     response={
-        'message':'添加成员成功！'
+        'message':'success'
     }
     return jsonify(response)
 
@@ -205,6 +205,23 @@ def get_user_bygroup():
        res.append(user_to_content(user))
     return jsonify(res) 
 
+# 删除成员
+@app.route('/api/delete_user',methods=['POST'])
+def delete_user():
+    db.session.query(GroupMember).filter(and_(GroupMember.user_id==request.form['userid'],GroupMember.group_id==request.form['groupid'])).delete()
+    #删除成员对应文档权限
+    db.session.commit()
+    return jsonify({'message':'success'})
+
+# 解散团队
+@app.route('/api/delete_group/',methods=['POST'])
+def delete_group():
+   db.session.query(GroupMember).filter(GroupMember.group_id==request.form['groupid']).delete()
+   db.session.query(Group).filter(Group.id==request.form['groupid']).delete()
+   #删除成员对应文档
+   #删除团队文档
+   db.session.commit()
+   return jsonify({'message':'success'})
 
 ####################################
 ########## Document操作 ###############
@@ -220,7 +237,7 @@ def create_doc():
         creator_id=user.id
         now=datetime.datetime.now()
         content=request.form['content']
-        msg="成功创建文档！"
+        msg="success"
         id = get_newid()
         newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content)
         db.session.add(newDocument)
@@ -236,7 +253,7 @@ def get_doccontent():
     msg=''
     mcontent=''
     if request.method == 'POST':
-        document = Document.query.filter(Document.title == request.form['title']).first()
+        document = Document.query.filter(Document.id == request.form['id']).first()
         user = User.query.filter(User.username==session['username']).first()
         #判断用户是否有权限查看该文档
         #未完善，只是初步的判断
@@ -244,10 +261,10 @@ def get_doccontent():
         #print(str(document.creator_id)+'/')
         #print(str(user.id)+'/')
         if (document!=None) and (str(document.creator_id)==str(user.id)):
-            msg="成功找到该文档"
+            msg="success"
             mcontent=document.content
         else:
-            msg="没有找到该文档"
+            msg="fail"
             mcontent=""
     response={
         'message':msg,
@@ -264,7 +281,7 @@ def modify_doc():
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
         user = User.query.filter(User.username==session['username']).first()
         if (document!=None) and (str(document.creator_id)==str(user.id)):
-            msg="成功修改"
+            msg="success"
             now=datetime.datetime.now()
             content=request.form['content']
             id = get_newid()
@@ -274,7 +291,7 @@ def modify_doc():
             #db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"content":content})
             db.session.commit()
         else:
-            msg="没有找到该文档"
+            msg="fail"
     response={
         'message':msg
     }
