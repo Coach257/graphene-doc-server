@@ -59,6 +59,11 @@ def get_user():
         }
     return jsonify(response)
 
+@app.route('/api/get_user_byid/',methods=['POST'])
+def get_user_byid():
+    user=User.query.filter(User.id==request.form['userid']).first()
+    return jsonify(user_to_content(user))
+
 @app.route('/api/logout/',methods=['GET'])
 def logout():
     msg='退出成功'
