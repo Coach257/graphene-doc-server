@@ -8,6 +8,7 @@ from manage import *
 from flask_cors import CORS
 import config
 
+
 app = Flask(__name__,
             static_folder = "../frontend/dist/static",
             template_folder = "../frontend/dist")
@@ -39,14 +40,14 @@ def login():
 #获取当前登录用户的用户名
 @app.route('/api/get_user/',methods=['GET'])
 def get_user():
-    user = User.query.filter(User.username==session['username']).first()
-    if user==None: 
+    if session['username']==None: 
         response={
             'username':'',
             'password':'',
             'email':''
         }
     else:
+        user = get_user_byusername(session['username']).first()
         response={
             'username':user.username,
             'password':user.password,
@@ -70,13 +71,12 @@ def regist():
     if request.method == 'POST':
         username = User.query.filter(User.username == request.form['username']).first()
         email = User.query.filter(User.email == request.form['email']).first()
-        if(request.form['password1']!=request.form['password2']):
-            msg = '两次密码不一致！'
-        elif(username or email):
+        if(username or email):
             msg='用户名或邮箱不能重复！'
         else:
             msg="成功注册！"
-            newUser=User(username=request.form['username'], password=request.form['password1'], email=request.form['email'])
+            id=get_newid()
+            newUser=User(id=id, username=request.form['username'], password=request.form['password'], email=request.form['email'])
             db.session.add(newUser)
             db.session.commit()
     response={
@@ -86,7 +86,6 @@ def regist():
 
 @app.route('/api/getalluser/',methods=['GET'])
 def getalluser():
-    session['username']='zyhnb'
     all_user=User.query.all()
     res=[]
     context={}
@@ -113,14 +112,26 @@ def modifypwd():
             msg = '两次密码不一致！'
         else:
             session['password']=request.form['newpassword1']
-            db.session.query(User).filter(User.username == session['username']).update({"password":request.form['newpassword1']})
+            get_user_byusername(session['username']).update({"password":request.form['newpassword1']})
             db.session.commit()
             msg = 'success'
-    
+
     response={
         'message':msg
     }
     return jsonify(response)
+
+@app.route('/api/creategroup/',methods=['POST'])
+def creategroup():
+   user=get_user_byusername(session['username'])
+   newGroup=Group(groupname=request.form['groupname'],leaderid=user.id,createdtime=datetime.datetime.now(),description=request.form['description'])
+   db.session.add(newGroup)
+   db.session.commit()
+   response={
+       'message':'创建团队成功！'
+   }
+   return jsonify(response)
+
 
 if __name__ == '__main__':
     app.run(debug = True)

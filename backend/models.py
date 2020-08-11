@@ -17,5 +17,32 @@ class User(db.Model):
     email = db.Column(db.String(120), unique=True)
 
     def __repr__(self):
-        return '<User %r>' % self.username
+        return "<User %r>" % self.username
         
+class Group(db.Model):
+    __tablename__='Group'
+    id=db.Column(db.Integer,primary_key=True)
+    groupname=db.Column(db.String(80))
+    leaderid=db.Column(db.Integer)
+    createdtime=db.Column(db.Date)
+    description=db.Column(db.String(80))
+    
+    def __repr__(self):
+        return "<Group %r>" % self.groupname
+
+class GroupMember(db.Model):
+    __tablename__='GroupMember'
+    id=db.Column(db.Integer,primary_key=True)
+    group_id=db.Column(db.Integer)
+    user_id=db.Column(db.Integer)
+
+class Document(db.Model):
+    __tablename__='Document'
+    docid = db.Column(db.Integer, primary_key=True)
+    title = db.Column(db.String(80), unique=True)
+    creator_id=db.Column(db.Integer)
+    created_time=db.Column(db.DateTime, default=datetime.now)
+    content=db.Column(db.String(100000005))
+
+    def __repr__(self):
+        return "<Document %r>" % self.title
