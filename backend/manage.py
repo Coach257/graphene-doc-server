@@ -32,24 +32,3 @@ def valid_login(username, password):
 def get_user_byusername(username):
     user = User.query.filter(User.username==username).first()
     return user
-
-def get_user_bykeyword(keyword):
-    all_user=User.query.filter(User.username.like('%{keyword}%'.format(keyword=keyword))).all()
-    return all_user
-
-def get_user_ingroup(groupid):
-    all_GroupMember=GroupMember.query.filter(GroupMember.group_id==groupid)
-    all_user=[]
-    for groupmember in all_GroupMember:
-        user=User.query.filter(User.id==groupmember.user_id).all()
-        all_user+=user
-    return all_user
-
-def user_to_content(user):
-    content={
-        'id':user.id,
-        'username':user.username,
-        'email':user.email,
-        'password':user.password
-    }
-    return content
