@@ -13,6 +13,7 @@ app = Flask(__name__,
             static_folder = "../frontend/dist/static",
             template_folder = "../frontend/dist")
 cors = CORS(app, resources={r"/api/*": {"origins": "*"}})
+
 app.config.from_object(config)
 app.secret_key = '\xc9ixnRb\xe40\xd4\xa5\x7f\x03\xd0y6\x01\x1f\x96\xeao+\x8a\x9f\xe4'
 db = SQLAlchemy(app)
@@ -44,7 +45,8 @@ def login():
 #获取当前登录用户
 @app.route('/api/get_user/',methods=['GET'])
 def get_user():
-    if session['username']==None: 
+    #print(session)
+    if session==None or session['username']==None or session['username']=='' : 
         response={
             'username':'',
             'password':'',
@@ -103,23 +105,21 @@ def getalluser():
     return jsonify(res)
 
 
-# 修改密码
-@app.route('/api/modifypwd/', methods=['POST'])
-def modifypwd():
+# 修改User Info
+@app.route('/api/modify_user_info/', methods=['POST'])
+def modify_user_info():
     msg = None
     if request.method == 'POST':
         user = User.query.filter(User.username==session['username']).first()
-        session['password'] = user.password
-        if (session['password']!=request.form['oldpassword']):
+        if (user.password!=request.form['oldpassword']):
             msg = '原密码错误！'
-        elif(request.form['newpassword1']!=request.form['newpassword2']):
-            msg = '两次密码不一致！'
         else:
-            session['password']=request.form['newpassword1']
-            db.session.query(User).filter(User.username==session['username']).update({"password":request.form['newpassword1']})
+            db.session.query(User).filter(User.username==session['username']).update({"password":request.form['new_password1']})
+            db.session.query(User).filter(User.username==session['username']).update({"username":request.form['new_username']})
+            db.session.query(User).filter(User.username==session['username']).update({"email":request.form['new_email']})
             db.session.commit()
+            session['username']=request.form['new_username']
             msg = 'success'
-
     response={
         'message':msg
     }
@@ -221,29 +221,27 @@ def get_doccontent():
     return jsonify(response)
 
 
+'''
 #修改文档
 @app.route('/api/modify_doc/', methods=['POST'])
 def modify_doc():
     msg=''
     if request.method == 'POST':
-        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        title = Document.query.filter(Document.title == request.form['title']).first()
         user = User.query.filter(User.username==session['username']).first()
-        if (document!=None) and (str(document.creator_id)==str(user.id)):
-            msg="成功修改"
-            now=datetime.datetime.now()
-            content=request.form['content']
-            id = get_newid()
-            db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"content":content})
-            #修改时间更新
-            #待解决，因为缺少修改时间这个字段
-            #db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"content":content})
-            db.session.commit()
-        else:
-            msg="没有找到该文档"
+        creator_id=user.id
+        now=datetime.now()
+        content=request.form['content']
+        msg="成功创建文档！"
+        id = get_newid()
+        newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content)
+        db.session.add(newDocument)
+        db.session.commit()
     response={
         'message':msg
     }
     return jsonify(response)
+'''
 
 if __name__ == '__main__':
     app.run(debug = True)
