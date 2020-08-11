@@ -22,6 +22,10 @@ db = SQLAlchemy(app)
 def home(path):
     return render_template("index.html")
 
+####################################
+########## User 操作 ###############
+####################################
+
 #登录
 @app.route('/api/login/', methods=['POST'])
 def login():
@@ -98,6 +102,7 @@ def getalluser():
         res.append(context)
     return jsonify(res)
 
+
 # 修改密码
 @app.route('/api/modifypwd/', methods=['POST'])
 def modifypwd():
@@ -119,6 +124,10 @@ def modifypwd():
         'message':msg
     }
     return jsonify(response)
+
+####################################
+########## Group 操作 ###############
+####################################
 
 @app.route('/api/creategroup/',methods=['POST'])
 def creategroup():
@@ -160,6 +169,78 @@ def addgroupmember():
         'message':'添加成员成功！'
     }
     return jsonify(response)
+
+####################################
+########## Document操作 ###############
+####################################
+
+#创建文档
+@app.route('/api/create_doc/', methods=['POST'])
+def create_doc():
+    msg=''
+    if request.method == 'POST':
+        title = Document.query.filter(Document.title == request.form['title']).first()
+        user = User.query.filter(User.username==session['username']).first()
+        creator_id=user.id
+        now=datetime.datetime.now()
+        content=request.form['content']
+        msg="成功创建文档！"
+        id = get_newid()
+        newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content)
+        db.session.add(newDocument)
+        db.session.commit()
+    response={
+        'message':msg
+    }
+    return jsonify(response)
+
+#获取文档
+@app.route('/api/get_doccontent/', methods=['POST'])
+def get_doccontent():
+    msg=''
+    mcontent=''
+    if request.method == 'POST':
+        document = Document.query.filter(Document.title == request.form['title']).first()
+        user = User.query.filter(User.username==session['username']).first()
+        #判断用户是否有权限查看该文档
+        #未完善，只是初步的判断
+        msg='ok'
+        #print(str(document.creator_id)+'/')
+        #print(str(user.id)+'/')
+        if str(document.creator_id)==str(user.id):
+            msg="成功找到该文档"
+            mcontent=document.content
+        else:
+            msg="没有找到该文档"
+            mcontent=""
+    response={
+        'message':msg,
+        'content':mcontent
+    }
+    return jsonify(response)
+
+
+'''
+#修改文档
+@app.route('/api/modify_doc/', methods=['POST'])
+def modify_doc():
+    msg=''
+    if request.method == 'POST':
+        title = Document.query.filter(Document.title == request.form['title']).first()
+        user = User.query.filter(User.username==session['username']).first()
+        creator_id=user.id
+        now=datetime.now()
+        content=request.form['content']
+        msg="成功创建文档！"
+        id = get_newid()
+        newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content)
+        db.session.add(newDocument)
+        db.session.commit()
+    response={
+        'message':msg
+    }
+    return jsonify(response)
+'''
 
 if __name__ == '__main__':
     app.run(debug = True)
