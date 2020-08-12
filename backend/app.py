@@ -232,7 +232,6 @@ def delete_group():
 def create_doc():
     msg=''
     if request.method == 'POST':
-        title = Document.query.filter(Document.title == request.form['title']).first()
         user = User.query.filter(User.username==session['username']).first()
         creator_id=user.id
         now=datetime.datetime.now()
@@ -300,6 +299,11 @@ def modify_doc():
 ####################################
 ########## 权限 操作 ###############
 ####################################
+
+# 1：有权限
+# 0：无权限
+# 创建者直接权限全给
+# 只有创建者才有给别人授予权限的权利
 
 # 授予权限
 @app.route('/api/grant_right/', methods=['POST'])
