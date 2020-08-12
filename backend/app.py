@@ -203,7 +203,7 @@ def create_doc():
         content=request.form['content']
         msg="success"
         id = get_newid()
-        newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content)
+        newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content,recycled=0)
         db.session.add(newDocument)
         db.session.commit()
 
@@ -270,6 +270,26 @@ def modify_doc():
             db.session.commit()
         else:
             msg="fail"
+    response={
+        'message':msg
+    }
+    return jsonify(response)
+
+#文档删除到回收站中
+@app.route('/api/recycle_doc/', methods=['POST'])
+def recycle_doc():
+    msg=''
+    if request.method=='POST':
+        id=get_newid()
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.username==session['username']).first()
+        DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+        if (document!=None) and (DUlink.delete_right==1):
+            msg='success'
+            db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"recycled":1})
+            db.session.commit()
+        else:
+            msg='fail'
     response={
         'message':msg
     }
