@@ -147,7 +147,7 @@ def create_doc():
         content=request.form['content']
         msg="成功创建文档！"
         id = get_newid()
-        newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content)
+        newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content,recycled=0)
         db.session.add(newDocument)
         db.session.commit()
     response={
@@ -200,7 +200,60 @@ def modify_doc():
         'message':msg
     }
     return jsonify(response)
+<<<<<<< Updated upstream
 '''
+=======
+
+#文档删除到回收站中
+@app.route('/api/recycle_doc/', methods=['POST'])
+def recycle_doc():
+    msg=''
+    if request.method=='POST':
+        id=get_newid()
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.username==session['username']).first()
+        DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+        if (document!=None) and (DUlink.delete_right==1):
+            msg='success'
+            db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"recycled":1})
+            db.session.commit()
+        else:
+            msg='fail'
+    response={
+        'message':msg
+    }
+    return jsonify(response)
+    
+####################################
+########## 权限 操作 ###############
+####################################
+
+# 授予权限
+@app.route('/api/grant_right/', methods=['POST'])
+def grant_right():
+    msg=''
+    if request.method=='POST':
+        id=get_newid()
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.username==request.form['username']).first()
+        share_right=request.form['share_right']
+        watch_right=request.form['watch_right']
+        modify_right=request.form['modify_right']
+        delete_right=request.form['delete_right']
+        discuss_right=request.form['discuss_right']
+        newDocumentUser=DocumentUser(id=id,document_id=document.id,user_id=user.id,
+            share_right=share_right,watch_right=watch_right,modify_right=modify_right,
+            delete_right=delete_right,discuss_right=discuss_right
+        )
+        db.session.add(newDocumentUser)
+        db.session.commit()
+        response={
+            'message':'grant right success'
+        }
+        return jsonify(response)
+
+
+>>>>>>> Stashed changes
 
 if __name__ == '__main__':
     app.run(debug = True)
