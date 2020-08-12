@@ -232,7 +232,6 @@ def delete_group():
 def create_doc():
     msg=''
     if request.method == 'POST':
-        title = Document.query.filter(Document.title == request.form['title']).first()
         user = User.query.filter(User.username==session['username']).first()
         creator_id=user.id
         now=datetime.datetime.now()
@@ -242,6 +241,21 @@ def create_doc():
         newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content)
         db.session.add(newDocument)
         db.session.commit()
+
+        #赋予创建者以文档的全部权限
+        share_right=1
+        watch_right=1
+        modify_right=1
+        delete_right=1
+        discuss_right=1
+        document=newDocument
+        newDocumentUser=DocumentUser(id=id,document_id=document.id,user_id=user.id,
+            share_right=share_right,watch_right=watch_right,modify_right=modify_right,
+            delete_right=delete_right,discuss_right=discuss_right
+        )
+        db.session.add(newDocumentUser)
+        db.session.commit()
+
     response={
         'message':msg
     }
