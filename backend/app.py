@@ -250,13 +250,13 @@ def get_doccontent():
     msg=''
     mcontent=''
     if request.method == 'POST':
-        document = Document.query.filter(Document.id == request.form['id']).first()
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
         user = User.query.filter(User.username==session['username']).first()
         # 判断用户是否有权限查看该文档
         # 未完善，只是初步的判断
         msg='ok'
-        # print(str(document.creator_id)+'/')
-        # print(str(user.id)+'/')
+        #print(str(document.creator_id)+'/')
+        #print(str(user.id)+'/')
         if (document!=None) and (str(document.creator_id)==str(user.id)):
             msg="success"
             mcontent=document.content
