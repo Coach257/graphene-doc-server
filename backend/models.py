@@ -12,9 +12,9 @@ db = SQLAlchemy(app)
 class User(db.Model):
     __tablename__='User'
     id = db.Column(db.Integer, primary_key=True)
-    username = db.Column(db.String(80), unique=True)
-    password = db.Column(db.String(80))
-    email = db.Column(db.String(120), unique=True)
+    username = db.Column(db.String(255), unique=True)
+    password = db.Column(db.String(255))
+    email = db.Column(db.String(255), unique=True)
 
     def __repr__(self):
         return "<User %r>" % self.username
@@ -22,10 +22,10 @@ class User(db.Model):
 class Group(db.Model):
     __tablename__='Group'
     id=db.Column(db.Integer,primary_key=True)
-    groupname=db.Column(db.String(80))
+    groupname=db.Column(db.String(255))
     leaderid=db.Column(db.Integer)
     createdtime=db.Column(db.DateTime)
-    description=db.Column(db.String(80))
+    description=db.Column(db.String(255))
     
     def __repr__(self):
         return "<Group %r>" % self.groupname
@@ -42,11 +42,13 @@ class GroupMember(db.Model):
 class Document(db.Model):
     __tablename__='Document'
     id = db.Column(db.Integer, primary_key=True)
-    title = db.Column(db.String(80), unique=True)
+    title = db.Column(db.String(255), unique=True)
     creator_id=db.Column(db.Integer)
     created_time=db.Column(db.DateTime)
-    content=db.Column(db.Text)
+    content=db.Column(db.LONGTEXT)
     recycled=db.Column(db.Integer)
+    is_occupied=db.Column(db.Integer) # 0: Not occupied, 1: Occupied
+    group_id=db.Column(db.Integer) # 0: Not group document, not 0: Group document
     def __repr__(self):
         return "<Document %r>" % self.title
 
@@ -70,5 +72,5 @@ class Comment(db.Model):
     id=db.Column(db.Integer,primary_key=True)
     document_id=db.Column(db.Integer)
     creator_id=db.Column(db.Integer)
-    content=db.Column(db.String(2000))
+    content=db.Column(db.LONGTEXT)
     created_time=db.Column(db.DateTime)
