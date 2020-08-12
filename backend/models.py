@@ -46,6 +46,7 @@ class Document(db.Model):
     creator_id=db.Column(db.Integer)
     created_time=db.Column(db.DateTime)
     content=db.Column(db.String(100000005))
+    recycled=db.Column(db.Integer)
     def __repr__(self):
         return "<Document %r>" % self.title
 
