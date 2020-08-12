@@ -16,6 +16,10 @@ app.config.from_object(config)
 app.secret_key = '\xc9ixnRb\xe40\xd4\xa5\x7f\x03\xd0y6\x01\x1f\x96\xeao+\x8a\x9f\xe4'
 db = SQLAlchemy(app)
 
+@app.teardown_appcontext
+def shutdown_session(exception=None):
+    db.session.remove()
+
 @app.route('/', defaults={'path': ''})
 @app.route('/<path:path>')
 def home(path):
@@ -26,6 +30,7 @@ def home(path):
 ####################################
 
 #登录
+# tested
 @app.route('/api/login/', methods=['POST'])
 def login():
     msg=''
@@ -36,6 +41,7 @@ def login():
     return sendmsg('fail')
 
 #获取当前登录用户
+# tested
 @app.route('/api/get_user/',methods=['GET'])
 def get_user():
     if session==None or session['username']==None or session['username']=='' : 
@@ -45,17 +51,19 @@ def get_user():
         response=user_to_content(user)
     return jsonify(response)
 
+# tested
 @app.route('/api/get_user_byid/',methods=['POST'])
 def get_user_byid():
     user=User.query.filter(User.id==request.form['userid']).first()
     return jsonify(user_to_content(user))
 
+# tested
 @app.route('/api/logout/',methods=['GET'])
 def logout():
     session['username']=None
     return sendmsg('success')
 
-#注册
+# 注册
 @app.route('/api/regist/', methods=['POST'])
 def regist():
     if request.method == 'POST':
@@ -70,6 +78,7 @@ def regist():
             db.session.commit()
     return sendmsg('success')
 
+# tested
 @app.route('/api/getalluser/',methods=['GET'])
 def getalluser():
     all_user=User.query.all()
@@ -87,9 +96,11 @@ def modify_user_info():
         if (user.password!=request.form['oldpassword']):
             return sendmsg('fail')
         else:
-            db.session.query(User).filter(User.username==session['username']).update({"password":request.form['new_password1']})
-            db.session.query(User).filter(User.username==session['username']).update({"username":request.form['new_username']})
-            db.session.query(User).filter(User.username==session['username']).update({"email":request.form['new_email']})
+            db.session.query(User).filter(User.username==session['username']).update({"password":request.form['new_password1'],
+                "username":request.form['new_username'],
+                "email":request.form['new_email']})
+            # db.session.query(User).filter(User.username==session['username']).update({"username":request.form['new_username']})
+            # db.session.query(User).filter(User.username==session['username']).update({"email":request.form['new_email']})
             db.session.commit()
             session['username']=request.form['new_username']
     return sendmsg('success')
@@ -100,6 +111,7 @@ def modify_user_info():
 ####################################
 
 # 已登录的用户创建group，设置group的简介
+# tested
 @app.route('/api/creategroup/',methods=['POST'])
 def creategroup():
    user=get_user_byusername(session['username'])
@@ -112,6 +124,7 @@ def creategroup():
    return sendmsg('success')
 
 # 显示我加入的group
+# tested
 @app.route('/api/mygroup/',methods=['GET'])
 def mygroup():
     user=get_user_byusername(session['username'])
@@ -122,14 +135,18 @@ def mygroup():
         res.append(group_to_content(group))
     return jsonify(res)
 
+# 判断这个group是不是当前登录用户所创建的group
+# tested
 @app.route('/api/groupiscreatedbyme',methods=['POST'])
 def groupiscreatedbyme():
     user=get_user_byusername(session['username'])
-    res=Group.query.filter(ans_(Group.leaderid==user.id,Group.id==request.form['groupid'])).first()
+    res=Group.query.filter(and_(Group.leaderid==user.id,Group.id==request.form['groupid'])).first()
     if(res):
-        return sendmsg('success')
+        return sendmsg('yes')
+    return sendmsg('no')
 
 # 在我的group中添加用户，这里的用户是前端判断好的不在该group中的user
+# tested
 @app.route('/api/addgroupmember/',methods=['POST'])
 def addgroupmember():
     userid=request.form['userid']
@@ -144,6 +161,7 @@ def addgroupmember():
     return jsonify(response)
 
 # 团队创建者想要邀请需要先检索用户，根据用户名检索，返回所有不在该团队中的检索用户
+# tested
 @app.route('/api/queryuser/',methods=['POST'])
 def queryuser():
     keyword=request.form['keyword']
@@ -162,13 +180,14 @@ def queryuser():
     return jsonify(res)
 
 # 显示该团队下的成员
+# tested
 @app.route('/api/get_user_bygroup/',methods=['POST'])
 def get_user_bygroup():
     all_group_user=get_user_ingroup(request.form['groupid'])
     res=[]
     for user in all_group_user:
        res.append(user_to_content(user))
-    return jsonify(res) 
+    return jsonify(res)
 
 # 删除成员
 @app.route('/api/delete_user',methods=['POST'])
@@ -192,7 +211,7 @@ def delete_group():
 ########## Document操作 ###############
 ####################################
 
-#创建文档
+# 创建文档
 @app.route('/api/create_doc/', methods=['POST'])
 def create_doc():
     msg=''
@@ -225,7 +244,7 @@ def create_doc():
     }
     return jsonify(response)
 
-#获取文档
+# 获取文档
 @app.route('/api/get_doccontent/', methods=['POST'])
 def get_doccontent():
     msg=''
@@ -233,11 +252,11 @@ def get_doccontent():
     if request.method == 'POST':
         document = Document.query.filter(Document.id == request.form['id']).first()
         user = User.query.filter(User.username==session['username']).first()
-        #判断用户是否有权限查看该文档
-        #未完善，只是初步的判断
+        # 判断用户是否有权限查看该文档
+        # 未完善，只是初步的判断
         msg='ok'
-        #print(str(document.creator_id)+'/')
-        #print(str(user.id)+'/')
+        # print(str(document.creator_id)+'/')
+        # print(str(user.id)+'/')
         if (document!=None) and (str(document.creator_id)==str(user.id)):
             msg="success"
             mcontent=document.content
@@ -251,7 +270,7 @@ def get_doccontent():
     return jsonify(response)
 
 
-#修改文档
+# 修改文档
 @app.route('/api/modify_doc/', methods=['POST'])
 def modify_doc():
     msg=''
@@ -275,7 +294,7 @@ def modify_doc():
     }
     return jsonify(response)
 
-#文档删除到回收站中
+# 文档删除到回收站中
 @app.route('/api/recycle_doc/', methods=['POST'])
 def recycle_doc():
     msg=''
@@ -342,11 +361,12 @@ def modify_right():
         modify_right=request.form['modify_right']
         delete_right=request.form['delete_right']
         discuss_right=request.form['discuss_right']
-        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"share_right":share_right})
-        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"watch_right":watch_right})
-        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"modify_right":modify_right})
-        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"delete_right":delete_right})
-        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"discuss_right":discuss_right})
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"share_right":share_right,
+            "watch_right":watch_right,"modify_right":modify_right,"delete_right":delete_right,"discuss_right":discuss_right})
+        # db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"watch_right":watch_right})
+        # db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"modify_right":modify_right})
+        # db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"delete_right":delete_right})
+        # db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"discuss_right":discuss_right})
         db.session.commit()
         response={
             'message':'modify right success'
