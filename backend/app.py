@@ -206,6 +206,20 @@ def create_doc():
         newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content)
         db.session.add(newDocument)
         db.session.commit()
+
+         #赋予创建者以文档的全部权限
+        share_right=1
+        watch_right=1
+        modify_right=1
+        delete_right=1
+        discuss_right=1
+        document=newDocument
+        newDocumentUser=DocumentUser(id=id,document_id=document.id,user_id=user.id,
+            share_right=share_right,watch_right=watch_right,modify_right=modify_right,
+            delete_right=delete_right,discuss_right=discuss_right
+        )
+        db.session.add(newDocumentUser)
+        db.session.commit()
     response={
         'message':msg
     }
@@ -265,6 +279,11 @@ def modify_doc():
 ########## 权限 操作 ###############
 ####################################
 
+# 1：有权限
+# 0：无权限
+# 创建者直接权限全给
+# 只有创建者才有给别人授予权限的权利
+
 # 授予权限
 @app.route('/api/grant_right/', methods=['POST'])
 def grant_right():
@@ -289,6 +308,30 @@ def grant_right():
         }
         return jsonify(response)
 
+# 修改权限
+@app.route('/api/modify_right/', methods=['POST'])
+def modify_right():
+    msg=''
+    if request.method=='POST':
+        
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.username==request.form['username']).first()
+
+        share_right=request.form['share_right']
+        watch_right=request.form['watch_right']
+        modify_right=request.form['modify_right']
+        delete_right=request.form['delete_right']
+        discuss_right=request.form['discuss_right']
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"share_right":share_right})
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"watch_right":watch_right})
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"modify_right":modify_right})
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"delete_right":delete_right})
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"discuss_right":discuss_right})
+        db.session.commit()
+        response={
+            'message':'modify right success'
+        }
+        return jsonify(response)
 
 
 if __name__ == '__main__':
