@@ -314,6 +314,31 @@ def recycle_doc():
     }
     return jsonify(response)
 
+#文档彻底删除操作
+@app.route('/api/del_complete_doc/', methods=['POST'])
+def del_complete_doc():
+    msg=''
+    if request.method=='POST':
+        id=get_newid()
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.username==session['username']).first()
+        DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+        print(document!=None)
+        print(document.recycled)
+        print(DUlink.delete_right)
+        if (document!=None) and (document.recycled==1) and (DUlink.delete_right==1):
+            msg='success'
+            db.session.query(DocumentUser).filter(DocumentUser.document_id==document.id).delete()
+            db.session.commit()
+            db.session.query(Document).filter(Document.id==document.id).delete()
+            db.session.commit()
+        else:
+            msg='fail'
+    response={
+        'message':msg
+    }
+    return jsonify(response)
+
 ####################################
 ########## 权限 操作 ###############
 ####################################
