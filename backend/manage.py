@@ -1,6 +1,6 @@
 
 from functools import wraps
-from flask import Flask, flash
+from flask import Flask, flash,jsonify
 
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import and_, or_,not_
@@ -53,3 +53,18 @@ def user_to_content(user):
         'password':user.password
     }
     return content
+
+def group_to_content(group):
+    context={
+        'groupid':group.id,
+        'groupname':group.groupname,
+        'description':group.description,
+        'createdtime':group.createdtime
+    }
+    return context
+
+def sendmsg(str):
+    context={
+        'message':str
+    }
+    return jsonify(context)
