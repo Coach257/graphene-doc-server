@@ -402,6 +402,7 @@ def modify_right():
 ########## 评论 操作 ###############
 ####################################
 
+# 创建评论
 @app.route('/api/create_comment/', methods=['POST'])
 def create_comment():
     msg=''
@@ -420,6 +421,15 @@ def create_comment():
             'message':'create comment success'
         }
         return jsonify(response)
+
+# 获取文档的所有评论
+@app.route('/api/get_all_comment', methods=['POST'])
+def get_all_comment():
+    all_comment=Comment.query.filter(Comment.document_id==request.form['DocumentID'])
+    res=[]
+    for comment in all_comment:
+        res.append(comment_to_content(comment))
+    return jsonify(res)
 
 if __name__ == '__main__':
     app.run(debug = True)

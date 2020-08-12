@@ -63,6 +63,16 @@ def group_to_content(group):
     }
     return context
 
+def comment_to_content(comment):
+    content={
+        'id':comment.id,
+        'document_id':comment.document_id,
+        'creator_id':comment.creator_id,
+        'content':comment.content,
+        'created_time':comment.created_time
+    }
+    return content
+
 def sendmsg(str):
     context={
         'message':str
