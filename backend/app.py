@@ -344,7 +344,30 @@ def grant_right():
         }
         return jsonify(response)
 
+# 修改权限
+@app.route('/api/modify_right/', methods=['POST'])
+def modify_right():
+    msg=''
+    if request.method=='POST':
+        
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.username==request.form['username']).first()
 
+        share_right=request.form['share_right']
+        watch_right=request.form['watch_right']
+        modify_right=request.form['modify_right']
+        delete_right=request.form['delete_right']
+        discuss_right=request.form['discuss_right']
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"share_right":share_right})
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"watch_right":watch_right})
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"modify_right":modify_right})
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"delete_right":delete_right})
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"discuss_right":discuss_right})
+        db.session.commit()
+        response={
+            'message':'modify right success'
+        }
+        return jsonify(response)
 
 if __name__ == '__main__':
     app.run(debug = True)
