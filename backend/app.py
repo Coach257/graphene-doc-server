@@ -32,30 +32,17 @@ def login():
     if request.method == 'POST':
         if valid_login(request.form['username'], request.form['password']):
             session['username'] = request.form.get('username')
-            msg='success'
-        else:
-            msg='fail'
-    response={
-        'message':msg
-    }
-    return jsonify(response)
+            return sendmsg('success')
+    return sendmsg('fail')
 
 #获取当前登录用户
 @app.route('/api/get_user/',methods=['GET'])
 def get_user():
     if session==None or session['username']==None or session['username']=='' : 
-        response={
-            'username':'',
-            'password':'',
-            'email':''
-        }
+        response=user_to_content(User(0,'','',''))
     else:
         user = get_user_byusername(session['username'])
-        response={
-            'username':user.username,
-            'password':user.password,
-            'email':user.email
-        }
+        response=user_to_content(user)
     return jsonify(response)
 
 @app.route('/api/get_user_byid/',methods=['POST'])
@@ -65,67 +52,47 @@ def get_user_byid():
 
 @app.route('/api/logout/',methods=['GET'])
 def logout():
-    msg='success'
     session['username']=None
-    response={
-        'message':msg
-    }
-    return jsonify(response)
+    return sendmsg('success')
 
 #注册
 @app.route('/api/regist/', methods=['POST'])
 def regist():
-    msg=''
     if request.method == 'POST':
         username = User.query.filter(User.username == request.form['username']).first()
         email = User.query.filter(User.email == request.form['email']).first()
         if(username or email):
-            msg='用户名或邮箱不能重复！'
+            return sendmsg('fail')
         else:
-            msg="success"
             id=get_newid()
             newUser=User(id=id, username=request.form['username'], password=request.form['password'], email=request.form['email'])
             db.session.add(newUser)
             db.session.commit()
-    response={
-        'message':msg
-    }
-    return jsonify(response)
+    return sendmsg('success')
 
 @app.route('/api/getalluser/',methods=['GET'])
 def getalluser():
     all_user=User.query.all()
     res=[]
-    context={}
     for user in all_user:
-        context={
-            'username':user.username,
-            'password':user.password,
-            'email':user.email
-        }
-        res.append(context)
+        res.append(user_to_content(user))
     return jsonify(res)
 
 
 # 修改User Info
 @app.route('/api/modify_user_info/', methods=['POST'])
 def modify_user_info():
-    msg = None
     if request.method == 'POST':
         user = User.query.filter(User.username==session['username']).first()
         if (user.password!=request.form['oldpassword']):
-            msg = 'fail'
+            return sendmsg('fail')
         else:
             db.session.query(User).filter(User.username==session['username']).update({"password":request.form['new_password1']})
             db.session.query(User).filter(User.username==session['username']).update({"username":request.form['new_username']})
             db.session.query(User).filter(User.username==session['username']).update({"email":request.form['new_email']})
             db.session.commit()
             session['username']=request.form['new_username']
-            msg = 'success'
-    response={
-        'message':msg
-    }
-    return jsonify(response)
+    return sendmsg('success')
 
 
 ####################################
@@ -142,27 +109,25 @@ def creategroup():
    db.session.add(newGroup)
    db.session.add(newGroupMember)
    db.session.commit()
-   response={
-       'message':'创建团队成功！'
-   }
-   return jsonify(response)
+   return sendmsg('success')
 
-# 只显示我是创建者的group
+# 显示我加入的group
 @app.route('/api/mygroup/',methods=['GET'])
 def mygroup():
     user=get_user_byusername(session['username'])
-    all_group=Group.query.filter(Group.leaderid==user.id)
+    all_groupmember=GroupMember.query.filter(GroupMember.user_id==user.id)
     res=[]
-    context={}
-    for group in all_group:
-        context={
-            'groupid':group.id,
-            'groupname':group.groupname,
-            'description':group.description,
-            'createdtime':group.createdtime
-        }
-        res.append(context)
+    for groupmember in all_groupmember:
+        group=Group.query.filter(Group.id==groupmember.group_id).first()
+        res.append(group_to_content(group))
     return jsonify(res)
+
+@app.route('/api/groupiscreatedbyme',methods=['POST'])
+def groupiscreatedbyme():
+    user=get_user_byusername(session['username'])
+    res=Group.query.filter(ans_(Group.leaderid==user.id,Group.id==request.form['groupid'])).first()
+    if(res):
+        return sendmsg('success')
 
 # 在我的group中添加用户，这里的用户是前端判断好的不在该group中的user
 @app.route('/api/addgroupmember/',methods=['POST'])
@@ -238,11 +203,11 @@ def create_doc():
         content=request.form['content']
         msg="success"
         id = get_newid()
-        newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content,recycled=0)
+        newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content)
         db.session.add(newDocument)
         db.session.commit()
 
-        #赋予创建者以文档的全部权限
+         #赋予创建者以文档的全部权限
         share_right=1
         watch_right=1
         modify_right=1
@@ -255,7 +220,6 @@ def create_doc():
         )
         db.session.add(newDocumentUser)
         db.session.commit()
-
     response={
         'message':msg
     }
@@ -311,29 +275,14 @@ def modify_doc():
     }
     return jsonify(response)
 
-#文档删除到回收站中
-@app.route('/api/recycle_doc/', methods=['POST'])
-def recycle_doc():
-    msg=''
-    if request.method=='POST':
-        id=get_newid()
-        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
-        user = User.query.filter(User.username==session['username']).first()
-        DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
-        if (document!=None) and (DUlink.delete_right==1):
-            msg='success'
-            db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"recycled":1})
-            db.session.commit()
-        else:
-            msg='fail'
-    response={
-        'message':msg
-    }
-    return jsonify(response)
-    
 ####################################
 ########## 权限 操作 ###############
 ####################################
+
+# 1：有权限
+# 0：无权限
+# 创建者直接权限全给
+# 只有创建者才有给别人授予权限的权利
 
 # 授予权限
 @app.route('/api/grant_right/', methods=['POST'])
@@ -359,6 +308,30 @@ def grant_right():
         }
         return jsonify(response)
 
+# 修改权限
+@app.route('/api/modify_right/', methods=['POST'])
+def modify_right():
+    msg=''
+    if request.method=='POST':
+        
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.username==request.form['username']).first()
+
+        share_right=request.form['share_right']
+        watch_right=request.form['watch_right']
+        modify_right=request.form['modify_right']
+        delete_right=request.form['delete_right']
+        discuss_right=request.form['discuss_right']
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"share_right":share_right})
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"watch_right":watch_right})
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"modify_right":modify_right})
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"delete_right":delete_right})
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"discuss_right":discuss_right})
+        db.session.commit()
+        response={
+            'message':'modify right success'
+        }
+        return jsonify(response)
 
 
 if __name__ == '__main__':
