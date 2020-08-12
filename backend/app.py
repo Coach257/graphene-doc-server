@@ -42,13 +42,10 @@ def login():
 
 #获取当前登录用户
 # tested
-@app.route('/api/get_user/',methods=['GET'])
+@app.route('/api/get_user/',methods=['POST'])
 def get_user():
-    if session==None or session['username']==None or session['username']=='' : 
-        response=user_to_content(User(0,'','',''))
-    else:
-        user = get_user_byusername(session['username'])
-        response=user_to_content(user)
+    user = get_user_byusername(request.form['username'])
+    response=user_to_content(user)
     return jsonify(response)
 
 # tested
@@ -60,7 +57,6 @@ def get_user_byid():
 # tested
 @app.route('/api/logout/',methods=['GET'])
 def logout():
-    session['username']=None
     return sendmsg('success')
 
 # 注册
@@ -92,17 +88,18 @@ def getalluser():
 @app.route('/api/modify_user_info/', methods=['POST'])
 def modify_user_info():
     if request.method == 'POST':
-        user = User.query.filter(User.username==session['username']).first()
-        if (user.password!=request.form['oldpassword']):
+        user = User.query.filter(User.username==request.form['username']).first()
+        username = User.query.filter(User.username == request.form['new_username']).first()
+        email = User.query.filter(User.email == request.form['new_email']).first()
+        if((username and user.id!=username.id) or email):
             return sendmsg('fail')
-        else:
-            db.session.query(User).filter(User.username==session['username']).update({"password":request.form['new_password1'],
-                "username":request.form['new_username'],
-                "email":request.form['new_email']})
-            # db.session.query(User).filter(User.username==session['username']).update({"username":request.form['new_username']})
-            # db.session.query(User).filter(User.username==session['username']).update({"email":request.form['new_email']})
-            db.session.commit()
-            session['username']=request.form['new_username']
+        db.session.query(User).filter(User.username==request.form['username']).update({"password":request.form['new_password1'],
+            "username":request.form['new_username'],
+            "email":request.form['new_email']})
+        # db.session.query(User).filter(User.username==session['username']).update({"username":request.form['new_username']})
+        # db.session.query(User).filter(User.username==session['username']).update({"email":request.form['new_email']})
+        db.session.commit()
+        session['username']=request.form['new_username']
     return sendmsg('success')
 
 
@@ -251,10 +248,9 @@ def get_doccontent():
     mcontent=''
     if request.method == 'POST':
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
-        user = User.query.filter(User.username==session['username']).first()
+        user=User.query.filter(User.username==request.form['username']).first()
         # 判断用户是否有权限查看该文档
         # 未完善，只是初步的判断
-        msg='ok'
         # print(str(document.creator_id)+'/')
         # print(str(user.id)+'/')
         if (document!=None) and (str(document.creator_id)==str(user.id)):
@@ -276,7 +272,7 @@ def modify_doc():
     msg=''
     if request.method == 'POST':
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
-        user = User.query.filter(User.username==session['username']).first()
+        user = User.query.filter(User.username==request.form['username']).first()
         if (document!=None) and (str(document.creator_id)==str(user.id)):
             msg="success"
             now=datetime.datetime.now()
