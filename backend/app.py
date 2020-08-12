@@ -330,6 +330,8 @@ def del_complete_doc():
             msg='success'
             db.session.query(DocumentUser).filter(DocumentUser.document_id==document.id).delete()
             db.session.commit()
+            db.session.query(Comment).filter(Comment.document_id==document.id).delete()
+            db.session.commit()
             db.session.query(Document).filter(Document.id==document.id).delete()
             db.session.commit()
         else:
