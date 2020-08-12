@@ -303,7 +303,7 @@ def recycle_doc():
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
         user = User.query.filter(User.username==session['username']).first()
         DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
-        if (document!=None) and (DUlink.delete_right==1):
+        if (document!=None) and (DUlink.delete_right==1)and (document.recycled==0):
             msg='success'
             db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"recycled":1})
             db.session.commit()
@@ -314,7 +314,27 @@ def recycle_doc():
     }
     return jsonify(response)
 
-#文档彻底删除操作
+# 文件从回收站中删除变成二级删除状态
+@app.route('/api/del_doc/', methods=['POST'])
+def del_doc():
+    msg=''
+    if request.method=='POST':
+        id=get_newid()
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.username==session['username']).first()
+        DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+        if (document!=None) and (DUlink.delete_right==1) and (document.recycled==1):
+            msg='success'
+            db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"recycled":2})
+            db.session.commit()
+        else:
+            msg='fail'
+    response={
+        'message':msg
+    }
+    return jsonify(response)
+
+# 文档彻底删除操作
 @app.route('/api/del_complete_doc/', methods=['POST'])
 def del_complete_doc():
     msg=''
