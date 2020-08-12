@@ -49,15 +49,17 @@ class Document(db.Model):
     def __repr__(self):
         return "<Document %r>" % self.title
 
+
 class DocumentUser(db.Model):
     __tablename__='DocumentUser'
-    DocumentUserID=db.Column(db.Integer, primary_key=True)
-    DocumentID=db.Column(db.Integer)
-    UserID=db.Column(db.Integer)
-    IsCreator=db.Column(db.Boolean)
-    ShareRight=db.Column(db.Boolean)
-    WatchRight=db.Column(db.Boolean)
-    ModifyRight=db.Column(db.Boolean)
-    DiscussRight=db.Column(db.Boolean)
+    id=db.Column(db.Integer, primary_key=True)
+    document_id=db.Column(db.Integer)
+    user_id=db.Column(db.Integer)
+    # is_creator=db.Column(db.Boolean)
+    share_right=db.Column(db.Integer)
+    watch_right=db.Column(db.Integer)
+    modify_right=db.Column(db.Integer)
+    delete_right=db.Column(db.Integer)
+    discuss_right=db.Column(db.Integer)
     def __repr__(self):
-        return "<DocumentUser %r>" % self.DocumentUserID
+        return "<DocumentUser %r>" % self.document_user_id
