@@ -255,8 +255,8 @@ def get_doccontent():
         # 判断用户是否有权限查看该文档
         # 未完善，只是初步的判断
         msg='ok'
-        #print(str(document.creator_id)+'/')
-        #print(str(user.id)+'/')
+        # print(str(document.creator_id)+'/')
+        # print(str(user.id)+'/')
         if (document!=None) and (str(document.creator_id)==str(user.id)):
             msg="success"
             mcontent=document.content
@@ -398,6 +398,28 @@ def modify_right():
         }
         return jsonify(response)
 
+####################################
+########## 评论 操作 ###############
+####################################
+
+@app.route('/api/create_comment/', methods=['POST'])
+def create_comment():
+    msg=''
+    if request.method == 'POST':
+        id=get_newid()
+        user = User.query.filter(User.username==session['username']).first()
+        creator_id=user.id
+        document_id=request.form['DocumentID']
+        now=datetime.datetime.now()
+        content=request.form['content']
+        msg="success"
+        newComment=Comment(id=id,document_id=document_id,creator_id=creator_id,content=content,created_time=now)
+        db.session.add(newComment)
+        db.session.commit()
+        response={
+            'message':'create comment success'
+        }
+        return jsonify(response)
 
 if __name__ == '__main__':
     app.run(debug = True)

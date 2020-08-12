@@ -45,7 +45,7 @@ class Document(db.Model):
     title = db.Column(db.String(80), unique=True)
     creator_id=db.Column(db.Integer)
     created_time=db.Column(db.DateTime)
-    content=db.Column(db.String(100000005))
+    content=db.Column(db.Text)
     recycled=db.Column(db.Integer)
     def __repr__(self):
         return "<Document %r>" % self.title
@@ -64,3 +64,11 @@ class DocumentUser(db.Model):
     discuss_right=db.Column(db.Integer)
     def __repr__(self):
         return "<DocumentUser %r>" % self.document_user_id
+
+class Comment(db.Model):
+    __tablename__='Comment'
+    id=db.Column(db.Integer,primary_key=True)
+    document_id=db.Column(db.Integer)
+    creator_id=db.Column(db.Integer)
+    content=db.Column(db.String(2000))
+    created_time=db.Column(db.DateTime)
