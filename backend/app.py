@@ -111,7 +111,7 @@ def modify_user_info():
 # tested
 @app.route('/api/creategroup/',methods=['POST'])
 def creategroup():
-   user=get_user_byusername(request.form['username'])
+   user=get_user_byusername(session['username'])
    id=get_newid()
    newGroup=Group(id=id,groupname=request.form['groupname'],leaderid=user.id,createdtime=datetime.datetime.now(),description=request.form['description'])
    newGroupMember=GroupMember(id=id,group_id=id,user_id=user.id)
@@ -124,7 +124,7 @@ def creategroup():
 # tested
 @app.route('/api/mygroup/',methods=['GET'])
 def mygroup():
-    user=get_user_byusername(request.form['username'])
+    user=get_user_byusername(session['username'])
     all_groupmember=GroupMember.query.filter(GroupMember.user_id==user.id)
     res=[]
     for groupmember in all_groupmember:
@@ -136,7 +136,7 @@ def mygroup():
 # tested
 @app.route('/api/groupiscreatedbyme',methods=['POST'])
 def groupiscreatedbyme():
-    user=get_user_byusername(request.form['username'])
+    user=get_user_byusername(session['username'])
     res=Group.query.filter(and_(Group.leaderid==user.id,Group.id==request.form['groupid'])).first()
     if(res):
         return sendmsg('yes')
@@ -213,7 +213,7 @@ def delete_group():
 def create_doc():
     msg=''
     if request.method == 'POST':
-        user = User.query.filter(User.username==request.form['username']).first()
+        user = User.query.filter(User.username==session['username']).first()
         creator_id=user.id
         now=datetime.datetime.now()
         content=request.form['content']
@@ -297,7 +297,7 @@ def recycle_doc():
     if request.method=='POST':
         id=get_newid()
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
-        user = User.query.filter(User.username==request.form['username']).first()
+        user = User.query.filter(User.username==session['username']).first()
         DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
         if (document!=None) and (DUlink.delete_right==1)and (document.recycled==0):
             msg='success'
@@ -317,7 +317,7 @@ def del_doc():
     if request.method=='POST':
         id=get_newid()
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
-        user = User.query.filter(User.username==request.form['username']).first()
+        user = User.query.filter(User.username==session['username']).first()
         DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
         if (document!=None) and (DUlink.delete_right==1) and (document.recycled==1):
             msg='success'
@@ -337,7 +337,7 @@ def del_complete_doc():
     if request.method=='POST':
         id=get_newid()
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
-        user = User.query.filter(User.username==request.form['username']).first()
+        user = User.query.filter(User.username==session['username']).first()
         DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
         print(document!=None)
         print(document.recycled)
@@ -426,7 +426,7 @@ def create_comment():
     msg=''
     if request.method == 'POST':
         id=get_newid()
-        user = User.query.filter(User.username==request.form['username']).first()
+        user = User.query.filter(User.username==session['username']).first()
         creator_id=user.id
         document_id=request.form['DocumentID']
         now=datetime.datetime.now()
