@@ -45,7 +45,7 @@ class Document(db.Model):
     title = db.Column(db.String(255), unique=True)
     creator_id=db.Column(db.Integer)
     created_time=db.Column(db.DateTime)
-    content=db.Column(db.LONGTEXT)
+    content=db.Column(db.TEXT)
     recycled=db.Column(db.Integer)
     is_occupied=db.Column(db.Integer) # 0: Not occupied, 1: Occupied
     group_id=db.Column(db.Integer) # 0: Personal document, not 0: Group document
@@ -72,5 +72,5 @@ class Comment(db.Model):
     id=db.Column(db.Integer,primary_key=True)
     document_id=db.Column(db.Integer)
     creator_id=db.Column(db.Integer)
-    content=db.Column(db.LONGTEXT)
+    content=db.Column(db.TEXT)
     created_time=db.Column(db.DateTime)
