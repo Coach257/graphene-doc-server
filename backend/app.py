@@ -338,6 +338,8 @@ def get_doccontent():
         if (document!=None) and (DUlink!=None):
             msg="success"
             mcontent=document.content
+            now=datetime.datetime.now()
+            db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"last_watch":now})
         else:
             msg="fail"
             mcontent=""
