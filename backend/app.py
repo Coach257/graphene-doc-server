@@ -33,7 +33,6 @@ def home(path):
 # tested
 @app.route('/api/login/', methods=['POST'])
 def login():
-    msg=''
     if request.method == 'POST':
         if valid_login(request.form['username'], request.form['password']):
             session['username'] = request.form.get('username')
@@ -138,13 +137,23 @@ def mygroup():
 
 # 判断这个group是不是当前登录用户所创建的group
 # tested
-@app.route('/api/groupiscreatedbyme',methods=['POST'])
+@app.route('/api/groupiscreatedbyme/',methods=['POST'])
 def groupiscreatedbyme():
     user=get_user_byusername(request.form['username'])
     res=Group.query.filter(and_(Group.leaderid==user.id,Group.id==request.form['groupid'])).first()
     if(res):
         return sendmsg('yes')
     return sendmsg('no')
+
+@app.route('/api/group_created_byme/',methods=['POST'])
+def group_created_byme():
+    user=get_user_byusername(request.form['username'])
+    all_group=Group.query.filter(Group.leaderid==user.id).all()
+    res=[]
+    for group in all_group:
+        res.append(group_to_content(group))
+    return jsonify(res)
+
 
 # 在我的group中添加用户，这里的用户是前端判断好的不在该group中的user
 # tested
@@ -314,6 +323,15 @@ def my_created_docs():
         res.append(document_to_content(document))
     return jsonify(res)
 
+@app.route('/api/my_deleted_docs/',methods=['POST'])
+def my_deleted_docs():
+    user=User.query.filter(User.username==request.form['username']).first()
+    all_document=Document.query.filter(and_(Document.creator_id==user.id,Document.recycled==1)).all()
+    res=[]
+    for document in all_document:
+        res.append(document_to_content(document))
+    return jsonify(res)
+
 # 获取文档
 @app.route('/api/get_doccontent/', methods=['POST'])
 def get_doccontent():
@@ -380,7 +398,7 @@ def modify_doc():
     return jsonify(response)
 
 # 文档分享
-@app.route('api/share_to',methods=['POST'])
+@app.route('/api/share_to/',methods=['POST'])
 def share_to():
     msg=''
     if request.method=='POST':
