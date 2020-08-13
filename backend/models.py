@@ -48,7 +48,7 @@ class Document(db.Model):
     content=db.Column(db.LONGTEXT)
     recycled=db.Column(db.Integer)
     is_occupied=db.Column(db.Integer) # 0: Not occupied, 1: Occupied
-    group_id=db.Column(db.Integer) # 0: Not group document, not 0: Group document
+    group_id=db.Column(db.Integer) # 0: Personal document, not 0: Group document
     def __repr__(self):
         return "<Document %r>" % self.title
 

@@ -40,7 +40,7 @@ def login():
             return sendmsg('success')
     return sendmsg('fail')
 
-#获取当前登录用户
+# 获取当前登录用户
 # tested
 @app.route('/api/get_user/',methods=['POST'])
 def get_user():
@@ -199,8 +199,8 @@ def delete_user():
 def delete_group():
    db.session.query(GroupMember).filter(GroupMember.group_id==request.form['groupid']).delete()
    db.session.query(Group).filter(Group.id==request.form['groupid']).delete()
-   #删除成员对应文档
-   #删除团队文档
+   # 删除成员对应文档
+   # 删除团队文档
    db.session.commit()
    return jsonify({'message':'success'})
 
@@ -208,22 +208,62 @@ def delete_group():
 ########## Document操作 ###############
 ####################################
 
-# 创建文档
-@app.route('/api/create_doc/', methods=['POST'])
-def create_doc():
+# 创建个人文档
+@app.route('/api/create_personal_doc/', methods=['POST'])
+def create_personal_doc():
     msg=''
     if request.method == 'POST':
+        id = get_newid()
         user = User.query.filter(User.username==request.form['username']).first()
         creator_id=user.id
         now=datetime.datetime.now()
         content=request.form['content']
         msg="success"
-        id = get_newid()
-        newDocument=Document(id=id,title=request.form['title'], creator_id=creator_id,created_time=now,content=content,recycled=0)
+        newDocument=Document(id=id,title=request.form['title'], 
+            creator_id=creator_id,created_time=now,
+            content=content,recycled=0,is_occupied=0,
+            group_id=0)
         db.session.add(newDocument)
         db.session.commit()
 
          #赋予创建者以文档的全部权限
+        share_right=1
+        watch_right=1
+        modify_right=1
+        delete_right=1
+        discuss_right=1
+        document=newDocument
+        newDocumentUser=DocumentUser(id=id,document_id=document.id,user_id=user.id,
+            share_right=share_right,watch_right=watch_right,modify_right=modify_right,
+            delete_right=delete_right,discuss_right=discuss_right
+        )
+        db.session.add(newDocumentUser)
+        db.session.commit()
+    response={
+        'message':msg
+    }
+    return jsonify(response)
+
+# 创建团队文档
+@app.route('/api/create_group_doc/', methods=['POST'])
+def create_group_doc():
+    msg=''
+    if request.method == 'POST':
+        id = get_newid()
+        user = User.query.filter(User.username==request.form['username']).first()
+        creator_id=user.id
+        now=datetime.datetime.now()
+        content=request.form['content']
+        group_id=request.form['group_id']
+        msg="success"
+        newDocument=Document(id=id,title=request.form['title'], 
+            creator_id=creator_id,created_time=now,
+            content=content,recycled=0,is_occupied=0,
+            group_id=group_id)
+        db.session.add(newDocument)
+        db.session.commit()
+
+         # 赋予创建者以文档的全部权限
         share_right=1
         watch_right=1
         modify_right=1
@@ -279,9 +319,9 @@ def modify_doc():
             content=request.form['content']
             id = get_newid()
             db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"content":content})
-            #修改时间更新
-            #待解决，因为缺少修改时间这个字段
-            #db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"content":content})
+            # 修改时间更新
+            # 待解决，因为缺少修改时间这个字段
+            # db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"content":content})
             db.session.commit()
         else:
             msg="fail"
