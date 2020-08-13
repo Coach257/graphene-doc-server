@@ -379,6 +379,41 @@ def modify_doc():
     }
     return jsonify(response)
 
+# 文档分享
+@app.route('api/share_to',methods=['POST'])
+def share_to():
+    msg=''
+    if request.method=='POST':
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.username==request.form['username']).first()
+        target_user=User.query.filter(User.username==request.form['target_user']).first()
+        id=get_newid()
+        newDU=DocumentUser(id=id,document_id=document.id,
+            user_id=target_user,last_watch=datetime.datetime.now(),
+            favorited=0)
+        db.session.add(newDU)
+        db.session.commit()
+
+# 收藏文档
+@app.route('/api/favor_doc/', methods=['POST'])
+def favor_doc():
+    msg=''
+    if request.method=='POST':
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.username==request.form['username']).first()
+        DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+        if document!=None and document.favorited==0:
+            msg='success'
+            db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"favorited":1})
+            db.session.commit()
+        else:
+            msg='fail'
+    response={
+        'message':msg
+    }
+    return jsonify(response)
+
+
 # 文档删除到回收站中
 @app.route('/api/recycle_doc/', methods=['POST'])
 def recycle_doc():
