@@ -360,7 +360,7 @@ def recycle_doc():
         user = User.query.filter(User.username==request.form['username']).first()
         DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
         # if (document!=None) and (DUlink.delete_right==1)and (document.recycled==0):
-        if (document!=None) and (document.recycled==0):
+        if (document!=None) and (document.recycled==0) and (document.creator_id==user.id):
             msg='success'
             db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"recycled":1})
             db.session.commit()
@@ -380,7 +380,7 @@ def del_doc():
         user = User.query.filter(User.username==request.form['username']).first()
         DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
         # if (document!=None) and (DUlink.delete_right==1) and (document.recycled==1):
-        if (document!=None) and (document.recycled==1):
+        if (document!=None) and (document.recycled==1) and (document.creator_id==user.id):
             msg='success'
             db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"recycled":2})
             db.session.commit()
@@ -391,32 +391,53 @@ def del_doc():
     }
     return jsonify(response)
 
+# 文档从回收站中恢复
+@app.route('/api/recover_doc/', methods=['POST'])
+def recover_doc():
+    msg=''
+    if request.method=='POST':
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.username==request.form['username']).first()
+        DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+        # if (document!=None) and (DUlink.delete_right==1)and (document.recycled==0):
+        if (document!=None) and (document.recycled==1) and (document.creator_id==user.id):
+            msg='success'
+            db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"recycled":0})
+            db.session.commit()
+        else:
+            msg='fail'
+    response={
+        'message':msg
+    }
+    return jsonify(response)
+
 # 文档彻底删除操作
-# @app.route('/api/del_complete_doc/', methods=['POST'])
-# def del_complete_doc():
-#     msg=''
-#     if request.method=='POST':
-#         id=get_newid()
-#         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
-#         user = User.query.filter(User.username==request.form['username']).first()
-#         DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
-#         print(document!=None)
-#         print(document.recycled)
-#         print(DUlink.delete_right)
-#         if (document!=None) and (document.recycled==1) and (DUlink.delete_right==1):
-#             msg='success'
-#             db.session.query(DocumentUser).filter(DocumentUser.document_id==document.id).delete()
-#             db.session.commit()
-#             db.session.query(Comment).filter(Comment.document_id==document.id).delete()
-#             db.session.commit()
-#             db.session.query(Document).filter(Document.id==document.id).delete()
-#             db.session.commit()
-#         else:
-#             msg='fail'
-#     response={
-#         'message':msg
-#     }
-#     return jsonify(response)
+@app.route('/api/del_complete_doc/', methods=['POST'])
+def del_complete_doc():
+    msg=''
+    if request.method=='POST':
+        id=get_newid()
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.username==request.form['username']).first()
+        DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+        print(document!=None)
+        print(document.recycled)
+        print(DUlink.delete_right)
+        #if (document!=None) and (document.recycled==1) and (DUlink.delete_right==1):
+        if (document!=None) and (document.recycled==1) and (document.creator_id==user.id):
+            msg='success'
+            db.session.query(DocumentUser).filter(DocumentUser.document_id==document.id).delete()
+            db.session.commit()
+            db.session.query(Comment).filter(Comment.document_id==document.id).delete()
+            db.session.commit()
+            db.session.query(Document).filter(Document.id==document.id).delete()
+            db.session.commit()
+        else:
+            msg='fail'
+    response={
+        'message':msg
+    }
+    return jsonify(response)
 
 ####################################
 ########## 权限 操作 ###############
