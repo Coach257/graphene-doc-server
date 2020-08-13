@@ -229,12 +229,12 @@ def create_personal_doc():
             share_right=request.form['share_right'],
             discuss_right=request.form['discuss_right'],
             content=content,recycled=0,is_occupied=0,
-            group_id=0)
+            group_id=0,modified_time=now)
         db.session.add(newDocument)
         db.session.commit()
 
         id=get_newid()
-        newDU=DocumentUser(id=id,document_id=document.id,
+        newDU=DocumentUser(id=id,document_id=newDocument.id,
             user_id=user.id,last_watch=datetime.datetime.now(),
             favorited=0)
         db.session.add(newDU)
@@ -275,12 +275,12 @@ def create_group_doc():
             share_right=request.form['share_right'],
             discuss_right=request.form['discuss_right'],
             content=content,recycled=0,is_occupied=0,
-            group_id=group_id)
+            group_id=group_id,modified_time=now)
         db.session.add(newDocument)
         db.session.commit()
 
         id=get_newid()
-        newDU=DocumentUser(id=id,document_id=document.id,
+        newDU=DocumentUser(id=id,document_id=newDocument.id,
             user_id=user.id,last_watch=datetime.datetime.now(),
             favorited=0)
         db.session.add(newDU)
