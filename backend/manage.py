@@ -73,6 +73,22 @@ def comment_to_content(comment):
     }
     return content
 
+def document_to_content(document):
+    content={
+        'id':document.id,
+        'title':document.title,
+        'creator_id':document.creator_id,
+        'created_time':document.created_time,
+        'modify_right':document.modify_right,
+        'share_right':document.share_right,
+        'discuss_right':document.discuss_right,
+        'recycled':document.recycled,
+        'is_occupied':document.is_occupied, # 0: Not occupied, 1: Occupied
+        'group_id':document.group_id,
+        'modified_time':document.modified_time
+    }
+    return content
+
 def sendmsg(str):
     context={
         'message':str
