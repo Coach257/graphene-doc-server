@@ -313,15 +313,6 @@ def my_created_docs():
     for document in all_document:
         res.append(document_to_content(document))
     return jsonify(res)
-    
-@app.route('/api/my_deleted_docs/',methods=['POST'])
-def my_deleted_docs():
-    user=User.query.filter(User.username==request.form['username']).first()
-    all_document=Document.query.filter(and_(Document.creator_id==user.id,Document.recycled==1)).all()
-    res=[]
-    for document in all_document:
-        res.append(document_to_content(document))
-    return jsonify(res)
 
 # 获取文档
 @app.route('/api/get_doccontent/', methods=['POST'])
