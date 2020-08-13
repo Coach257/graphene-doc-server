@@ -319,6 +319,7 @@ def my_created_docs():
 def get_doccontent():
     msg=''
     mcontent=''
+    mtime=datetime.datetime.now()
     if request.method == 'POST':
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
         user=User.query.filter(User.username==request.form['username']).first()
@@ -330,7 +331,8 @@ def get_doccontent():
                 'content':mcontent
             }
             return jsonify(response)
-        DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+        DUlink=db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+        mtime=DUlink.last_watch
         # 判断用户是否有权限查看该文档
         # 初步完善
         # TODO: 目前只有创建者能查看文档(已修正)
@@ -340,12 +342,16 @@ def get_doccontent():
             mcontent=document.content
             now=datetime.datetime.now()
             db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"last_watch":now})
+            db.session.commit()
+            DUlink=db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+            mtime=DUlink.last_watch
         else:
             msg="fail"
             mcontent=""
     response={
         'message':msg,
-        'content':mcontent
+        'content':mcontent,
+        'time':mtime
     }
     return jsonify(response)
 
