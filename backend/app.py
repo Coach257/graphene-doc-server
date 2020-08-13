@@ -155,6 +155,7 @@ def group_created_byme():
     return jsonify(res)
 
 
+# 添加成员
 # 在我的group中添加用户，这里的用户是前端判断好的不在该group中的user
 # tested
 @app.route('/api/addgroupmember/',methods=['POST'])
@@ -165,6 +166,14 @@ def addgroupmember():
     newGroupMember=GroupMember(id=id,user_id=userid,group_id=groupid)
     db.session.add(newGroupMember)
     db.session.commit()
+    all_document=db.session.query(Document).filter(Document.group_id==groupid).all()
+    for document in all_document:
+        id=get_newid()
+        newDU=DocumentUser(id=id,document_id=document.id,
+            user_id=userid,last_watch=datetime.datetime.now(),
+            favorited=0)
+        db.session.add(newDU)
+        db.session.commit()
     response={
         'message':'success'
     }
@@ -202,21 +211,32 @@ def get_user_bygroup():
 # 删除成员
 @app.route('/api/delete_user',methods=['POST'])
 def delete_user():
+    groupid=request.form['groupid']
+    userid=request.form['userid']
     db.session.query(GroupMember).filter(and_(GroupMember.user_id==request.form['userid'],GroupMember.group_id==request.form['groupid'])).delete()
     #删除成员对应文档权限
     db.session.commit()
+    all_document=db.session.query(Document).filter(Document.group_id==groupid).all()
+    for document in all_document:
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==userid)).delete()
+        db.session.commit()
     return jsonify({'message':'success'})
 
 # 解散团队
 @app.route('/api/delete_group/',methods=['POST'])
 def delete_group():
-   db.session.query(GroupMember).filter(GroupMember.group_id==request.form['groupid']).delete()
-   db.session.query(Group).filter(Group.id==request.form['groupid']).delete()
-   # 删除成员对应文档
-   # 删除团队文档
-   db.session.commit()
-   return jsonify({'message':'success'})
-
+    groupid=request.form['groupid']
+    db.session.query(GroupMember).filter(GroupMember.group_id==request.form['groupid']).delete()
+    db.session.query(Group).filter(Group.id==request.form['groupid']).delete()
+    # 删除成员对应文档
+    # # 删除团队文档
+    db.session.commit()
+    all_document=db.session.query(Document).filter(Document.group_id==groupid).all()
+    for document in all_document:
+        db.session.query(DocumentUser).filter(DocumentUser.document_id==document.id).delete()
+        db.session.commit()
+    return jsonify({'message':'success'})
+    
 ####################################
 ########## Document 操作 ###############
 ####################################
