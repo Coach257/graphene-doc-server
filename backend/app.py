@@ -312,10 +312,20 @@ def get_doccontent():
     if request.method == 'POST':
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
         user=User.query.filter(User.username==request.form['username']).first()
+        if (document==None) or (user==None):
+            msg="fail"
+            mcontent=""
+            response={
+                'message':msg,
+                'content':mcontent
+            }
+            return jsonify(response)
+        DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
         # 判断用户是否有权限查看该文档
-        # 未完善，只是初步的判断
-        # TODO: 目前只有创建者能查看文档
-        if (document!=None) and (str(document.creator_id)==str(user.id)):
+        # 初步完善
+        # TODO: 目前只有创建者能查看文档(已修正)
+        # TODO: 目前任何参与者都可以查看文档
+        if (document!=None) and (DUlink!=None):
             msg="success"
             mcontent=document.content
         else:
