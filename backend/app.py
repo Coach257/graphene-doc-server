@@ -125,7 +125,7 @@ def creategroup():
 
 # 显示我加入的group
 # tested
-@app.route('/api/mygroup/',methods=['GET'])
+@app.route('/api/mygroup/',methods=['POST'])
 def mygroup():
     user=get_user_byusername(request.form['username'])
     all_groupmember=GroupMember.query.filter(GroupMember.user_id==user.id)
