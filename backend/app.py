@@ -95,7 +95,8 @@ def modify_user_info():
             if(username.id!=user.id):
                 return sendmsg('fail')
         if(email):
-            return sendmsg('fail')
+            if(email.id!=user.id):
+                return sendmsg('fail')
         db.session.query(User).filter(User.username==request.form['username']).update({"password":request.form['new_password1'],
             "username":request.form['new_username'],
             "email":request.form['new_email']})
