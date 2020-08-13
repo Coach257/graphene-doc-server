@@ -212,7 +212,7 @@ def delete_group():
 ########## Document操作 ###############
 ####################################
 
-# 创建个人文档
+# 创建个人文档 (同时赋予权限)
 @app.route('/api/create_personal_doc/', methods=['POST'])
 def create_personal_doc():
     msg=''
@@ -233,25 +233,31 @@ def create_personal_doc():
         db.session.add(newDocument)
         db.session.commit()
 
-         #赋予创建者以文档的全部权限
-        share_right=1
-        watch_right=1
-        modify_right=1
-        delete_right=1
-        discuss_right=1
-        document=newDocument
-        newDocumentUser=DocumentUser(id=id,document_id=document.id,user_id=user.id,
-            share_right=share_right,watch_right=watch_right,modify_right=modify_right,
-            delete_right=delete_right,discuss_right=discuss_right
-        )
-        db.session.add(newDocumentUser)
+        id=get_newid()
+        newDU=DocumentUser(id=id,document_id=document.id,
+            user_id=user.id,last_watch=datetime.datetime.now(),
+            favorited=0)
+        db.session.add(newDU)
         db.session.commit()
+        # # 赋予创建者以文档的全部权限
+        # share_right=1
+        # watch_right=1
+        # modify_right=1
+        # delete_right=1
+        # discuss_right=1
+        # document=newDocument
+        # newDocumentUser=DocumentUser(id=id,document_id=document.id,user_id=user.id,
+        #     share_right=share_right,watch_right=watch_right,modify_right=modify_right,
+        #     delete_right=delete_right,discuss_right=discuss_right
+        # )
+        # db.session.add(newDocumentUser)
+        # db.session.commit()
     response={
         'message':msg
     }
     return jsonify(response)
 
-# 创建团队文档
+# 创建团队文档 (同时赋予权限)
 @app.route('/api/create_group_doc/', methods=['POST'])
 def create_group_doc():
     msg=''
@@ -265,24 +271,34 @@ def create_group_doc():
         msg="success"
         newDocument=Document(id=id,title=request.form['title'], 
             creator_id=creator_id,created_time=now,
+            modify_right=request.form['modify_right'],
+            share_right=request.form['share_right'],
+            discuss_right=request.form['discuss_right'],
             content=content,recycled=0,is_occupied=0,
             group_id=group_id)
         db.session.add(newDocument)
         db.session.commit()
 
-         # 赋予创建者以文档的全部权限
-        share_right=1
-        watch_right=1
-        modify_right=1
-        delete_right=1
-        discuss_right=1
-        document=newDocument
-        newDocumentUser=DocumentUser(id=id,document_id=document.id,user_id=user.id,
-            share_right=share_right,watch_right=watch_right,modify_right=modify_right,
-            delete_right=delete_right,discuss_right=discuss_right
-        )
-        db.session.add(newDocumentUser)
+        id=get_newid()
+        newDU=DocumentUser(id=id,document_id=document.id,
+            user_id=user.id,last_watch=datetime.datetime.now(),
+            favorited=0)
+        db.session.add(newDU)
         db.session.commit()
+
+        # # 赋予创建者以文档的全部权限
+        # share_right=1
+        # watch_right=1
+        # modify_right=1
+        # delete_right=1
+        # discuss_right=1
+        # document=newDocument
+        # newDocumentUser=DocumentUser(id=id,document_id=document.id,user_id=user.id,
+        #     share_right=share_right,watch_right=watch_right,modify_right=modify_right,
+        #     delete_right=delete_right,discuss_right=discuss_right
+        # )
+        # db.session.add(newDocumentUser)
+        # db.session.commit()
     response={
         'message':msg
     }
@@ -298,8 +314,7 @@ def get_doccontent():
         user=User.query.filter(User.username==request.form['username']).first()
         # 判断用户是否有权限查看该文档
         # 未完善，只是初步的判断
-        # print(str(document.creator_id)+'/')
-        # print(str(user.id)+'/')
+        # TODO: 目前只有创建者能查看文档
         if (document!=None) and (str(document.creator_id)==str(user.id)):
             msg="success"
             mcontent=document.content
@@ -320,15 +335,14 @@ def modify_doc():
     if request.method == 'POST':
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
         user = User.query.filter(User.username==request.form['username']).first()
+        # TODO: 目前只有创建者能修改文档
         if (document!=None) and (str(document.creator_id)==str(user.id)):
             msg="success"
             now=datetime.datetime.now()
             content=request.form['content']
-            id = get_newid()
-            db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"content":content})
-            # 修改时间更新
-            # 待解决，因为缺少修改时间这个字段
-            # db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"content":content})
+            db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"content":content,
+                "modified_time":now
+            })
             db.session.commit()
         else:
             msg="fail"
@@ -342,11 +356,11 @@ def modify_doc():
 def recycle_doc():
     msg=''
     if request.method=='POST':
-        id=get_newid()
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
         user = User.query.filter(User.username==request.form['username']).first()
         DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
-        if (document!=None) and (DUlink.delete_right==1)and (document.recycled==0):
+        # if (document!=None) and (DUlink.delete_right==1)and (document.recycled==0):
+        if (document!=None) and (document.recycled==0):
             msg='success'
             db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"recycled":1})
             db.session.commit()
@@ -362,11 +376,11 @@ def recycle_doc():
 def del_doc():
     msg=''
     if request.method=='POST':
-        id=get_newid()
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
         user = User.query.filter(User.username==request.form['username']).first()
         DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
-        if (document!=None) and (DUlink.delete_right==1) and (document.recycled==1):
+        # if (document!=None) and (DUlink.delete_right==1) and (document.recycled==1):
+        if (document!=None) and (document.recycled==1):
             msg='success'
             db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"recycled":2})
             db.session.commit()
@@ -378,31 +392,31 @@ def del_doc():
     return jsonify(response)
 
 # 文档彻底删除操作
-@app.route('/api/del_complete_doc/', methods=['POST'])
-def del_complete_doc():
-    msg=''
-    if request.method=='POST':
-        id=get_newid()
-        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
-        user = User.query.filter(User.username==request.form['username']).first()
-        DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
-        print(document!=None)
-        print(document.recycled)
-        print(DUlink.delete_right)
-        if (document!=None) and (document.recycled==1) and (DUlink.delete_right==1):
-            msg='success'
-            db.session.query(DocumentUser).filter(DocumentUser.document_id==document.id).delete()
-            db.session.commit()
-            db.session.query(Comment).filter(Comment.document_id==document.id).delete()
-            db.session.commit()
-            db.session.query(Document).filter(Document.id==document.id).delete()
-            db.session.commit()
-        else:
-            msg='fail'
-    response={
-        'message':msg
-    }
-    return jsonify(response)
+# @app.route('/api/del_complete_doc/', methods=['POST'])
+# def del_complete_doc():
+#     msg=''
+#     if request.method=='POST':
+#         id=get_newid()
+#         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+#         user = User.query.filter(User.username==request.form['username']).first()
+#         DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+#         print(document!=None)
+#         print(document.recycled)
+#         print(DUlink.delete_right)
+#         if (document!=None) and (document.recycled==1) and (DUlink.delete_right==1):
+#             msg='success'
+#             db.session.query(DocumentUser).filter(DocumentUser.document_id==document.id).delete()
+#             db.session.commit()
+#             db.session.query(Comment).filter(Comment.document_id==document.id).delete()
+#             db.session.commit()
+#             db.session.query(Document).filter(Document.id==document.id).delete()
+#             db.session.commit()
+#         else:
+#             msg='fail'
+#     response={
+#         'message':msg
+#     }
+#     return jsonify(response)
 
 ####################################
 ########## 权限 操作 ###############
@@ -413,48 +427,48 @@ def del_complete_doc():
 # 创建者直接权限全给
 # 只有创建者才有给别人授予权限的权利
 
-# 授予权限
-@app.route('/api/grant_right/', methods=['POST'])
-def grant_right():
-    msg=''
-    if request.method=='POST':
-        id=get_newid()
-        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
-        user = User.query.filter(User.username==request.form['username']).first()
-        share_right=request.form['share_right']
-        #watch_right=request.form['watch_right']
-        watch_right=1
-        modify_right=request.form['modify_right']
-        #delete_right=request.form['delete_right']
-        delete_right=0
-        discuss_right=request.form['discuss_right']
-        newDocumentUser=DocumentUser(id=id,document_id=document.id,user_id=user.id,
-            share_right=share_right,watch_right=watch_right,modify_right=modify_right,
-            delete_right=delete_right,discuss_right=discuss_right
-        )
-        db.session.add(newDocumentUser)
-        db.session.commit()
-        response={
-            'message':'grant right success'
-        }
-        return jsonify(response)
+# # 授予权限
+# @app.route('/api/grant_right/', methods=['POST'])
+# def grant_right():
+#     msg=''
+#     if request.method=='POST':
+#         id=get_newid()
+#         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+#         user = User.query.filter(User.username==request.form['username']).first()
+#         share_right=request.form['share_right']
+#         # watch_right=request.form['watch_right']
+#         modify_right=request.form['modify_right']
+#         # delete_right=request.form['delete_right']
+#         #delete_right=0
+#         discuss_right=request.form['discuss_right']
+#         newDocumentUser=DocumentUser(id=id,document_id=document.id,user_id=user.id,
+#             share_right=share_right,watch_right=watch_right,modify_right=modify_right,
+#             delete_right=delete_right,discuss_right=discuss_right
+#         )
+#         db.session.add(newDocumentUser)
+#         db.session.commit()
+#         response={
+#             'message':'grant right success'
+#         }
+#         return jsonify(response)
 
-# 修改权限
+# 文档创建者修改权限
 @app.route('/api/modify_right/', methods=['POST'])
 def modify_right():
     msg=''
     if request.method=='POST':
-        
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
         user = User.query.filter(User.username==request.form['username']).first()
-
         share_right=request.form['share_right']
-        watch_right=request.form['watch_right']
+        # watch_right=request.form['watch_right']
         modify_right=request.form['modify_right']
-        delete_right=request.form['delete_right']
+        # delete_right=request.form['delete_right']
         discuss_right=request.form['discuss_right']
-        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"share_right":share_right,
-            "watch_right":watch_right,"modify_right":modify_right,"delete_right":delete_right,"discuss_right":discuss_right})
+        db.session.query(Document).filter(Document.id==document.id).update({"share_right":share_right,
+            "modify_right":modify_right,"discuss_right":discuss_right})
+        #     "watch_right":watch_right,"modify_right":modify_right,"delete_right":delete_right,"discuss_right":discuss_right})
+        # db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"share_right":share_right,
+        #     "watch_right":watch_right,"modify_right":modify_right,"delete_right":delete_right,"discuss_right":discuss_right})
         # db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"watch_right":watch_right})
         # db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"modify_right":modify_right})
         # db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"delete_right":delete_right})

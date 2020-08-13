@@ -45,6 +45,7 @@ class Document(db.Model):
     title = db.Column(db.String(255), unique=True)
     creator_id=db.Column(db.Integer)
     created_time=db.Column(db.DateTime)
+    modified_time=db.Column(db.DateTime)
     modify_right=db.Column(db.Integer)
     share_right=db.Column(db.Integer)
     discuss_right=db.Column(db.Integer)
@@ -62,14 +63,14 @@ class DocumentUser(db.Model):
     document_id=db.Column(db.Integer)
     user_id=db.Column(db.Integer)
     # is_creator=db.Column(db.Boolean)
-    share_right=db.Column(db.Integer)
-    watch_right=db.Column(db.Integer)
-    modify_right=db.Column(db.Integer)
-    delete_right=db.Column(db.Integer)
-    discuss_right=db.Column(db.Integer)
+    # share_right=db.Column(db.Integer)
+    # watch_right=db.Column(db.Integer)
+    # modify_right=db.Column(db.Integer)
+    # delete_right=db.Column(db.Integer)
+    # discuss_right=db.Column(db.Integer)
     last_watch=db.Column(db.DataTime)
     favorited=db.Column(db.Integer)
-    recycled=db.Column(db.Integer)
+    # recycled=db.Column(db.Integer)
     def __repr__(self):
         return "<DocumentUser %r>" % self.document_user_id
 
