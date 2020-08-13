@@ -218,7 +218,7 @@ def delete_group():
    return jsonify({'message':'success'})
 
 ####################################
-########## Document操作 ###############
+########## Document 操作 ###############
 ####################################
 
 # 创建个人文档 (同时赋予权限)
@@ -289,11 +289,15 @@ def create_group_doc():
         db.session.commit()
 
         id=get_newid()
-        newDU=DocumentUser(id=id,document_id=newDocument.id,
-            user_id=user.id,last_watch=datetime.datetime.now(),
+        i=1
+        all_member=GroupMember.query.filter(GroupMember.group_id==group_id).all()
+        for member in all_member:
+            newDU=DocumentUser(id=id+i,document_id=newDocument.id,
+            user_id=member.id,last_watch=datetime.datetime.now(),
             favorited=0)
-        db.session.add(newDU)
-        db.session.commit()
+            i=i+1
+            db.session.add(newDU)
+            db.session.commit()
 
         # # 赋予创建者以文档的全部权限
         # share_right=1
