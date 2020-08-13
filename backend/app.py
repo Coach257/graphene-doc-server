@@ -304,6 +304,16 @@ def create_group_doc():
     }
     return jsonify(response)
 
+# 获取我创建的所有文档的信息
+@app.route('/api/my_created_docs/',methods=['POST'])
+def my_created_docs():
+    user=User.query.filter(User.username==request.form['username']).first()
+    all_document=Document.query.filter(and_(Document.creator_id==user.id,Document.recycled==0)).all()
+    res=[]
+    for document in all_document:
+        res.append(document_to_content(document))
+    return jsonify(res)
+
 # 获取文档
 @app.route('/api/get_doccontent/', methods=['POST'])
 def get_doccontent():
