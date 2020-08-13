@@ -236,10 +236,11 @@ def delete_group():
         db.session.query(DocumentUser).filter(DocumentUser.document_id==document.id).delete()
         db.session.commit()
     return jsonify({'message':'success'})
-    
+
 ####################################
-########## Document 操作 ###############
+########## Document操作 ###############
 ####################################
+
 
 # 创建个人文档 (同时赋予权限)
 @app.route('/api/create_personal_doc/', methods=['POST'])
@@ -455,6 +456,25 @@ def favor_doc():
     }
     return jsonify(response)
 
+# 查看我收藏的文档
+# 收藏的，并且没删除的
+@app.route('/api/my_favor_doc/',methods=['POST'])
+def my_favor_doc():
+    user=User.query.filter(User.username==request.form['username']).first()
+    DUlink=DocumentUser.query.filter(and_(DocumentUser.favorited==1,DocumentUser.user_id==user.id)).all()
+    res=[]
+    for dulink in DUlink:
+        document=Document.query.filter(and_(Document.id==dulink.document_id,Document.recycled==0)).first()
+        if(document):
+            res.append(document_to_content(document))
+    return jsonify(res)
+
+# 修改文档基本信息
+@app.route('/api/modify_doc_basic/',methods=['POST'])
+def modify_doc_basic():
+    db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"title":request.form['title']})
+    db.session.commit()
+    return sendmsg("success")
 
 # 文档删除到回收站中
 @app.route('/api/recycle_doc/', methods=['POST'])
