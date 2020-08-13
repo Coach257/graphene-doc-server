@@ -224,6 +224,9 @@ def create_personal_doc():
         msg="success"
         newDocument=Document(id=id,title=request.form['title'], 
             creator_id=creator_id,created_time=now,
+            modify_right=request.form['modify_right'],
+            share_right=request.form['share_right'],
+            discuss_right=request.form['discuss_right'],
             content=content,recycled=0,is_occupied=0,
             group_id=0)
         db.session.add(newDocument)
@@ -418,9 +421,11 @@ def grant_right():
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
         user = User.query.filter(User.username==request.form['username']).first()
         share_right=request.form['share_right']
-        watch_right=request.form['watch_right']
+        #watch_right=request.form['watch_right']
+        watch_right=1
         modify_right=request.form['modify_right']
-        delete_right=request.form['delete_right']
+        #delete_right=request.form['delete_right']
+        delete_right=0
         discuss_right=request.form['discuss_right']
         newDocumentUser=DocumentUser(id=id,document_id=document.id,user_id=user.id,
             share_right=share_right,watch_right=watch_right,modify_right=modify_right,

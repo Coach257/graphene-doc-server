@@ -45,6 +45,9 @@ class Document(db.Model):
     title = db.Column(db.String(255), unique=True)
     creator_id=db.Column(db.Integer)
     created_time=db.Column(db.DateTime)
+    modify_right=db.Column(db.Integer)
+    share_right=db.Column(db.Integer)
+    discuss_right=db.Column(db.Integer)
     content=db.Column(db.TEXT)
     recycled=db.Column(db.Integer)
     is_occupied=db.Column(db.Integer) # 0: Not occupied, 1: Occupied
