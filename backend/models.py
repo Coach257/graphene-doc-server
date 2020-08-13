@@ -68,7 +68,7 @@ class DocumentUser(db.Model):
     # modify_right=db.Column(db.Integer)
     # delete_right=db.Column(db.Integer)
     # discuss_right=db.Column(db.Integer)
-    last_watch=db.Column(db.DataTime)
+    last_watch=db.Column(db.DateTime)
     favorited=db.Column(db.Integer)
     # recycled=db.Column(db.Integer)
     def __repr__(self):
