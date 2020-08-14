@@ -632,6 +632,7 @@ def modify_right():
         discuss_right=request.form['discuss_right']
         db.session.query(Document).filter(Document.id==document.id).update({"share_right":share_right,
             "modify_right":modify_right,"discuss_right":discuss_right})
+        msg="success"
         #     "watch_right":watch_right,"modify_right":modify_right,"delete_right":delete_right,"discuss_right":discuss_right})
         # db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"share_right":share_right,
         #     "watch_right":watch_right,"modify_right":modify_right,"delete_right":delete_right,"discuss_right":discuss_right})
@@ -641,7 +642,7 @@ def modify_right():
         # db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"discuss_right":discuss_right})
         db.session.commit()
         response={
-            'message':'modify right success'
+            'message': msg
         }
         return jsonify(response)
 
@@ -665,7 +666,7 @@ def create_comment():
         db.session.add(newComment)
         db.session.commit()
         response={
-            'message':'create comment success'
+            'message': msg
         }
         return jsonify(response)
 
