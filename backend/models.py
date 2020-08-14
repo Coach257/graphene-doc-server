@@ -81,3 +81,13 @@ class Comment(db.Model):
     creator_id=db.Column(db.Integer)
     content=db.Column(db.TEXT)
     created_time=db.Column(db.DateTime)
+
+class Notice(db.Model):
+    __tablename__='Notice'
+    id=db.Column(db.Integer,primary_key=True)
+    sender_id=db.Column(db.String(255))
+    receiver_id=db.Column(db.String(255))
+    document_id=db.Column(db.Integer)
+    group_id=db.Column(db.Integer)
+    send_time=db.Column(db.DateTime)
+    content=db.Column(db.TEXT)
