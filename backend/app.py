@@ -401,7 +401,7 @@ def get_doccontent():
 # 获取团队所有没有被删除的文档
 @app.route('/api/get_group_docs/',methods=['POST'])
 def get_group_docs():
-    all_document=Document.query.filter(and_(Document.group_id==request.form['group_id'],Document.recycled==0)).all()
+    all_document=Document.query.filter(add_(Document.group_id==request.form['group_id'],Document.recycled==0)).all()
     res=[]
     for document in all_document:
         res.append(document_to_content(document))
@@ -681,3 +681,16 @@ def get_all_comment():
 
 if __name__ == '__main__':
     app.run(debug = True)
+
+####################################
+########## 消息 操作 ###############
+####################################
+
+# 获取用户未读所有的消息
+@app.route('/api/get_all_notice',methods=['POST'])
+def get_all_notice():
+    all_notice=Notice.query.filter(Notice.receiver_id==request.form['receiver_id'])
+    res=[]
+    for notice in all_notice:
+        res.append(notice_to_content(notice))
+    return jsonify(res)
