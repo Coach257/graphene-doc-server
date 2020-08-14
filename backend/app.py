@@ -573,6 +573,17 @@ def del_complete_doc():
     }
     return jsonify(response)
 
+# 显示最近使用文档
+@app.route('/api/show_recent_doc/', methods=['POST'])
+def show_recent_doc():
+    res=[]
+    all_documentuser=db.session.query(DocumentUser).filter(DocumentUser.user_id==request.form['userid']).order_by("-last_watch").all()
+    for DU in all_documentuser:
+        document=db.session.query(Document).filter(Document.id==DU.document_id).first()
+        res.append(document_to_content())
+    return jsonify(res)
+
+
 ####################################
 ########## 权限 操作 ###############
 ####################################
