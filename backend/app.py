@@ -398,6 +398,15 @@ def get_doccontent():
     }
     return jsonify(response)
 
+# 获取团队所有文档
+@app.route('/api/get_group_docs/',methods=['POST'])
+def get_group_docs():
+    all_document=Document.query.filter(Document.group_id==request.form['group_id']).all()
+    res=[]
+    for document in all_document:
+        res.append(document_to_content(document))
+    return jsonify(res)
+
 
 # 修改文档
 @app.route('/api/modify_doc/', methods=['POST'])
