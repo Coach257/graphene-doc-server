@@ -401,7 +401,7 @@ def get_doccontent():
 # 获取团队所有没有被删除的文档
 @app.route('/api/get_group_docs/',methods=['POST'])
 def get_group_docs():
-    all_document=Document.query.filter(add_(Document.group_id==request.form['group_id'],Document.recycled==0)).all()
+    all_document=Document.query.filter(and_(Document.group_id==request.form['group_id'],Document.recycled==0)).all()
     res=[]
     for document in all_document:
         res.append(document_to_content(document))
