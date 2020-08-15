@@ -511,24 +511,29 @@ def share_to():
     msg=''
     if request.method=='POST':
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
-        user = User.query.filter(User.username==request.form['username']).first()
-        target_user=User.query.filter(User.username==request.form['target_user']).first()
+        user = User.query.filter(User.id==request.form['user_id']).first()
+        target_user=User.query.filter(User.id==request.form['target_user_id']).first()
         id=get_newid()
         newDU=DocumentUser(id=id,document_id=document.id,
-            user_id=target_user,last_watch=datetime.datetime.now(),
+            user_id=target_user.id,last_watch=datetime.datetime.now(),
             favorited=0)
         
         # 发送消息
         id=get_newid()
         now=datetime.datetime.now()
         send_time=now.strftime('%Y-%m-%d')
-        content=send_time+", "+user.username+"分享给你了一个文档("+doucument.title+")"
+        content=send_time+", "+user.username+"分享给你了一个文档("+document.title+")"
         new_notice=Notice(id=id,sender_id=user.id,receiver_id=target_user.id,document_id=document.id,
             group_id=0,send_time=now,content=content,type=4
         )
+        msg='success'
         db.session.add(new_notice)
         db.session.add(newDU)
         db.session.commit()
+    response={
+        'message':msg
+    }
+    return jsonify(response)
 
 # 收藏文档
 @app.route('/api/favor_doc/', methods=['POST'])
