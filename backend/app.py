@@ -306,9 +306,13 @@ def delete_group():
     # 删除团队文档
     db.session.commit()
     all_document=db.session.query(Document).filter(Document.group_id==groupid).all()
+
     for document in all_document:
         db.session.query(DocumentUser).filter(DocumentUser.document_id==document.id).delete()
+        
         db.session.commit()
+    db.session.query(Document).filter(Document.group_id==groupid).delete()
+    db.session.commit()
     return jsonify({'message':'success'})
 
 ####################################
@@ -419,7 +423,8 @@ def my_created_docs():
     all_document=Document.query.filter(and_(Document.creator_id==user.id,Document.recycled==0)).all()
     res=[]
     for document in all_document:
-        res.append(document_to_content(document))
+        if document.recycled == 0:
+            res.append(document_to_content(document))
     return jsonify(res)
 
 @app.route('/api/my_deleted_docs/',methods=['POST'])
