@@ -625,10 +625,11 @@ def del_complete_doc():
 @app.route('/api/show_recent_doc/', methods=['POST'])
 def show_recent_doc():
     res=[]
-    all_documentuser=db.session.query(DocumentUser).filter(DocumentUser.user_id==request.form['userid']).order_by("-last_watch").all()
+    user = get_user_byusername(request.form['username'])
+    all_documentuser=db.session.query(DocumentUser).filter(DocumentUser.user_id==user.id).order_by("-last_watch").all()
     for DU in all_documentuser:
         document=db.session.query(Document).filter(Document.id==DU.document_id).first()
-        res.append(document_to_content())
+        res.append(document_to_content(document))
     return jsonify(res)
 
 
