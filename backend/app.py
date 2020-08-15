@@ -183,7 +183,7 @@ def addgroupmember():
     for document in all_document:
         id=get_newid()
         newDU=DocumentUser(id=id,document_id=document.id,
-            user_id=userid,last_watch=datetime.datetime.now(),
+            user_id=userid,last_watch=0,
             favorited=0)
         db.session.add(newDU)
         db.session.commit()
@@ -339,7 +339,7 @@ def create_personal_doc():
 
         id=get_newid()
         newDU=DocumentUser(id=id,document_id=newDocument.id,
-            user_id=user.id,last_watch=datetime.datetime.now(),
+            user_id=user.id,last_watch=0,
             favorited=0)
         db.session.add(newDU)
         db.session.commit()
@@ -388,11 +388,11 @@ def create_group_doc():
         all_member=GroupMember.query.filter(GroupMember.group_id==group_id).all()
         for member in all_member:
             newDU=DocumentUser(id=id+i,document_id=newDocument.id,
-            user_id=member.id,last_watch=datetime.datetime.now(),
+            user_id=member.user_id,last_watch=0,
             favorited=0)
             i=i+1
             db.session.add(newDU)
-            db.session.commit()
+        db.session.commit()
 
         # # 赋予创建者以文档的全部权限
         # share_right=1
@@ -515,7 +515,7 @@ def share_to():
         target_user=User.query.filter(User.id==request.form['target_user_id']).first()
         id=get_newid()
         newDU=DocumentUser(id=id,document_id=document.id,
-            user_id=target_user.id,last_watch=datetime.datetime.now(),
+            user_id=target_user.id,last_watch=0,
             favorited=0)
         
         # 发送消息
