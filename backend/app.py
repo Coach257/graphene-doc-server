@@ -207,10 +207,11 @@ def invite_user():
     sender_id=request.form['leader_id']
     sender=User.query.filter(User.id==sender_id).first()
     id=get_newid()
-    send_time=datetime.datetime.now().strftime('%Y-%m-%d')
+    now=datetime.datetime.now()
+    send_time=now.strftime('%Y-%m-%d')
     content=send_time+", "+sender.username+"邀请你加入团队("+group.groupname+")"
     new_notice=Notice(id=id,sender_id=sender_id,receiver_id=user_id,document_id=0,
-        group_id=group_id,send_time=send_time,content=content,type=0
+        group_id=group_id,send_time=now,content=content,type=0
     )
     db.session.add(new_notice)
     db.session.commit()
@@ -242,10 +243,11 @@ def delete_user():
     sender_id=request.form['leaderid']
     sender=User.query.filter(User.id==sender_id).first()
     id=get_newid()
-    send_time=datetime.datetime.now().strftime('%Y-%m-%d')
+    now=datetime.datetime.now()
+    send_time=now.strftime('%Y-%m-%d')
     content=send_time+", "+sender.username+"将你踢出了团队("+group.groupname+")"
     new_notice=Notice(id=id,sender_id=sender_id,receiver_id=userid,document_id=0,
-        group_id=groupid,send_time=send_time,content=content,type=0
+        group_id=groupid,send_time=now,content=content,type=0
     )
     db.session.add(new_notice)
     db.session.commit()
