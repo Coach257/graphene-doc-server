@@ -694,3 +694,14 @@ def get_all_notice():
     for notice in all_notice:
         res.append(notice_to_content(notice))
     return jsonify(res)
+
+# 未读转已读(直接从数据库中删除)
+@app.route('/api/del_new_notice',methods=['POST'])
+def del_new_notice():
+    new_notice_id=request.form['new_notice_id']
+    db.session.query(Notice).filter(Notice.id==new_notice_id).delete()
+    db.session.commit()
+    response={
+        'message':'success'
+    }
+    return jsonify(response)
