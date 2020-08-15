@@ -778,16 +778,19 @@ def create_comment():
         return jsonify(response)
 
 # 获取文档的所有评论
-@app.route('/api/get_all_comment', methods=['POST'])
+@app.route('/api/get_all_comment/', methods=['POST'])
 def get_all_comment():
-    all_comment=Comment.query.filter(Comment.document_id==request.form['DocumentID'])
+    all_comment=Comment.query.filter(Comment.document_id==request.form['DocumentID']).all()
     res=[]
     for comment in all_comment:
-        res.append(comment_to_content(comment))
+        user=User.query.filter(User.id==comment.creator_id).first()
+        res.append(comment_to_content(comment,user))
     return jsonify(res)
 
 if __name__ == '__main__':
     app.run(debug = True)
+
+
 
 ####################################
 ########## 消息 操作 ###############
@@ -812,3 +815,6 @@ def del_new_notice():
         'message':'success'
     }
     return jsonify(response)
+
+if __name__ == '__main__':
+    app.run(debug = True)

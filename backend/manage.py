@@ -73,13 +73,13 @@ def group_to_content(group):
     return context
 
 
-def comment_to_content(comment):
+def comment_to_content(comment,user):
     content = {
         'id': comment.id,
         'document_id': comment.document_id,
-        'creator_id': comment.creator_id,
+        'username': user.username,
         'content': comment.content,
-        'created_time': comment.created_time
+        'datetime': comment.created_time
     }
     return content
 
@@ -112,6 +112,7 @@ def notice_to_content(notice):
         'content': notice.content,
         'type': notice.type
     }
+    return content
 
 
 def sendmsg(str):
