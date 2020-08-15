@@ -198,6 +198,27 @@ def queryuser():
             res.append(user_to_content(user))
     return jsonify(res)
 
+# 邀请加入团队(发送邀请信息)
+@app.route('/api/invite_user',methods=['POST'])
+def invite_user():
+    group_id=request.form['group_id']
+    group=Group.query.filter(Group.id==group_id).first()
+    user_id=request.form['user_id']
+    sender_id=request.form['leader_id']
+    sender=User.query.filter(User.id==sender_id).first()
+    id=get_newid()
+    send_time=datetime.datetime.now().strftime('%Y-%m-%d')
+    content=send_time+", "+sender.username+"邀请你加入团队("+group.groupname+")"
+    new_notice=Notice(id=id,sender_id=sender_id,receiver_id=user_id,document_id=0,
+        group_id=group_id,send_time=send_time,content=content,type=0
+    )
+    db.session.add(new_notice)
+    db.session.commit()
+    response={
+        'message':'success'
+    }
+    return jsonify(response)
+
 # 显示该团队下的成员
 # tested
 @app.route('/api/get_user_bygroup/',methods=['POST'])
@@ -222,7 +243,7 @@ def delete_user():
     sender=User.query.filter(User.id==sender_id).first()
     id=get_newid()
     send_time=datetime.datetime.now().strftime('%Y-%m-%d')
-    content=send_time+", "+sender.username+"将你踢出了团队"+group.groupname
+    content=send_time+", "+sender.username+"将你踢出了团队("+group.groupname+")"
     new_notice=Notice(id=id,sender_id=sender_id,receiver_id=userid,document_id=0,
         group_id=groupid,send_time=send_time,content=content,type=0
     )
@@ -575,9 +596,7 @@ def del_complete_doc():
         if (document!=None) and (document.recycled==1) and (document.creator_id==user.id):
             msg='success'
             db.session.query(DocumentUser).filter(DocumentUser.document_id==document.id).delete()
-            db.session.commit()
             db.session.query(Comment).filter(Comment.document_id==document.id).delete()
-            db.session.commit()
             db.session.query(Document).filter(Document.id==document.id).delete()
             db.session.commit()
         else:
