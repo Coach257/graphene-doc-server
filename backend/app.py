@@ -333,7 +333,7 @@ def create_personal_doc():
             share_right=request.form['share_right'],
             discuss_right=request.form['discuss_right'],
             content=content,recycled=0,is_occupied=0,
-            group_id=0,modified_time=now)
+            group_id=0,modified_time=0)
         db.session.add(newDocument)
         db.session.commit()
 
@@ -379,7 +379,7 @@ def create_group_doc():
             share_right=request.form['share_right'],
             discuss_right=request.form['discuss_right'],
             content=content,recycled=0,is_occupied=0,
-            group_id=group_id,modified_time=now)
+            group_id=group_id,modified_time=0)
         db.session.add(newDocument)
         db.session.commit()
 
@@ -449,7 +449,7 @@ def get_doccontent():
             }
             return jsonify(response)
         DUlink=db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
-        mtime=DUlink.last_watch
+        # mtime=DUlink.last_watch
         # 判断用户是否有权限查看该文档
         # 初步完善
         # TODO: 目前只有创建者能查看文档(已修正)
@@ -458,10 +458,10 @@ def get_doccontent():
             msg="success"
             mcontent=document.content
             now=datetime.datetime.now()
+            mtime=now
             db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"last_watch":now})
             db.session.commit()
-            DUlink=db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
-            mtime=DUlink.last_watch
+            # DUlink=db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
         else:
             msg="fail"
             mcontent=""
