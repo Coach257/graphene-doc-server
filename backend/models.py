@@ -91,3 +91,10 @@ class Notice(db.Model):
     group_id=db.Column(db.Integer)
     send_time=db.Column(db.DateTime)
     content=db.Column(db.TEXT)
+    type=db.Column(db.Integer)
+# type
+# 0:我被踢出团队 只传content
+# 1:我想要加入某个团队，发送的加入团队申请已通过/拒绝 只content
+# 2:我被邀请加入某个团队，我要选择是否接受加入团队 传group_id、content
+# 3:我邀请他人加入某个团队，对方通过/拒绝 传group_id、content
+# 4:我创建的文档被评论 传document_id、content

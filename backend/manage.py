@@ -109,7 +109,8 @@ def notice_to_content(notice):
         'document_id': notice.document_id,
         'group_id': notice.group_id,
         'send_time': notice.send_time,
-        'content': notice.content
+        'content': notice.content,
+        'type': notice.type
     }
 
 
