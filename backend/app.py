@@ -517,6 +517,16 @@ def share_to():
         newDU=DocumentUser(id=id,document_id=document.id,
             user_id=target_user,last_watch=datetime.datetime.now(),
             favorited=0)
+        
+        # 发送消息
+        id=get_newid()
+        now=datetime.datetime.now()
+        send_time=now.strftime('%Y-%m-%d')
+        content=send_time+", "+user.username+"分享给你了一个文档("+doucument.title+")"
+        new_notice=Notice(id=id,sender_id=user.id,receiver_id=target_user.id,document_id=document.id,
+            group_id=0,send_time=now,content=content,type=4
+        )
+        db.session.add(new_notice)
         db.session.add(newDU)
         db.session.commit()
 
@@ -528,9 +538,9 @@ def favor_doc():
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
         user = User.query.filter(User.username==request.form['username']).first()
         DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
-        if document!=None and document.favorited==0:
+        if document!=None and DUlink.favorited==0:
             msg='success'
-            db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"favorited":1})
+            db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"favorited":1})
             db.session.commit()
         else:
             msg='fail'
