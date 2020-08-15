@@ -554,6 +554,25 @@ def favor_doc():
     }
     return jsonify(response)
 
+# 取消收藏文档
+@app.route('/api/cancel_favor_doc/', methods=['POST'])
+def cancel_favor_doc():
+    msg=''
+    if request.method=='POST':
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.username==request.form['username']).first()
+        DUlink=DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+        if document!=None and DUlink.favorited==1:
+            msg='success'
+            db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"favorited":0})
+            db.session.commit()
+        else:
+            msg='fail'
+    response={
+        'message':msg
+    }
+    return jsonify(response)
+
 # 查看我收藏的文档
 # 收藏的，并且没删除的
 @app.route('/api/my_favor_doc/',methods=['POST'])
