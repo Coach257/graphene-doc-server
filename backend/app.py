@@ -157,15 +157,28 @@ def group_created_byme():
 
 # 作为团队的管理者，添加成员
 # 在我的group中添加用户，这里的用户是前端判断好的不在该group中的user
-# tested
 @app.route('/api/addgroupmember/',methods=['POST'])
 def addgroupmember():
     userid=request.form['userid']
+    user=User.query.filter(User.id==userid).first()
     groupid=request.form['groupid']
+    group=Group.query.filter(Group.id==groupid).first()
     id=get_newid()
     newGroupMember=GroupMember(id=id,user_id=userid,group_id=groupid)
     db.session.add(newGroupMember)
     db.session.commit()
+
+    # 发送消息
+    id=get_newid()
+    now=datetime.datetime.now()
+    send_time=now.strftime('%Y-%m-%d')
+    content=send_time+", "+user.username+"通过了你的邀请，加入团队("+group.groupname+")"
+    new_notice=Notice(id=id,sender_id=userid,receiver_id=group.leaderid,document_id=0,
+        group_id=groupid,send_time=now,content=content,type=1
+    )
+    db.session.add(new_notice)
+    db.session.commit()
+
     all_document=db.session.query(Document).filter(Document.group_id==groupid).all()
     for document in all_document:
         id=get_newid()
@@ -211,7 +224,7 @@ def invite_user():
     send_time=now.strftime('%Y-%m-%d')
     content=send_time+", "+sender.username+"邀请你加入团队("+group.groupname+")"
     new_notice=Notice(id=id,sender_id=sender_id,receiver_id=user_id,document_id=0,
-        group_id=group_id,send_time=now,content=content,type=0
+        group_id=group_id,send_time=now,content=content,type=2
     )
     db.session.add(new_notice)
     db.session.commit()
