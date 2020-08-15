@@ -192,6 +192,30 @@ def addgroupmember():
     }
     return jsonify(response)
 
+# 团队管理者向我发送了加入团队邀请，我拒绝了
+@app.route('/api/refuse_groupmember/',methods=['POST'])
+def refuse_groupmember():
+    userid=request.form['userid']
+    user=User.query.filter(User.id==userid).first()
+    groupid=request.form['groupid']
+    group=Group.query.filter(Group.id==groupid).first()
+
+    # 发送消息
+    id=get_newid()
+    now=datetime.datetime.now()
+    send_time=now.strftime('%Y-%m-%d')
+    content=send_time+", "+user.username+"拒绝了你的邀请，不加入团队("+group.groupname+")"
+    new_notice=Notice(id=id,sender_id=userid,receiver_id=group.leaderid,document_id=0,
+        group_id=groupid,send_time=now,content=content,type=5
+    )
+    db.session.add(new_notice)
+    db.session.commit()
+
+    response={
+        'message':'success'
+    }
+    return jsonify(response)
+
 # 团队创建者想要邀请需要先检索用户，根据用户名检索，返回所有不在该团队中的检索用户
 # tested
 @app.route('/api/queryuser/',methods=['POST'])
