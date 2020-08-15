@@ -92,8 +92,9 @@ class Notice(db.Model):
     send_time=db.Column(db.DateTime)
     content=db.Column(db.TEXT)
     type=db.Column(db.Integer)
-# type
-# 0:我被踢出团队 只传content "a将你踢出了团队"
+# type:
+# 0:我被踢出团队 传content、group_id "a将你踢出了团队xxx"
 # 1:我被邀请加入某个团队，我要选择是否接受加入团队 传group_id、content 发送给sender "a通过/拒绝了你的邀请"
 # 2:我邀请他人加入某个团队，对方通过/拒绝 传group_id、content 发送给receiver "a邀请你加入团队xxx"
 # 3:我创建的文档被评论 评论者传给创建者 document_id、content 发送 "你的文档xxx被a评论"
+# 4:收到了来自他人分享来的文件，传document_id、content 由sender发送 "你收到了来自a分享的文档xxx"

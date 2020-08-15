@@ -208,14 +208,28 @@ def get_user_bygroup():
        res.append(user_to_content(user))
     return jsonify(res)
 
-# 删除成员
+# 删除团队成员
 @app.route('/api/delete_user',methods=['POST'])
 def delete_user():
     groupid=request.form['groupid']
+    group=Group.query.filter(Group.id==groupid).first()
     userid=request.form['userid']
     db.session.query(GroupMember).filter(and_(GroupMember.user_id==request.form['userid'],GroupMember.group_id==request.form['groupid'])).delete()
-    #删除成员对应文档权限
     db.session.commit()
+
+    # 发送消息
+    sender_id=request.form['leaderid']
+    sender=User.query.filter(User.id==sender_id).first()
+    id=get_newid()
+    send_time=datetime.datetime.now().strftime('%Y-%m-%d')
+    content=send_time+", "+sender.username+"将你踢出了团队"+group.groupname
+    new_notice=Notice(id=id,sender_id=sender_id,receiver_id=userid,document_id=0,
+        group_id=groupid,send_time=send_time,content=content,type=0
+    )
+    db.session.add(new_notice)
+    db.session.commit()
+
+    # 删除成员对应文档权限
     all_document=db.session.query(Document).filter(Document.group_id==groupid).all()
     for document in all_document:
         db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==userid)).delete()
@@ -229,7 +243,7 @@ def delete_group():
     db.session.query(GroupMember).filter(GroupMember.group_id==request.form['groupid']).delete()
     db.session.query(Group).filter(Group.id==request.form['groupid']).delete()
     # 删除成员对应文档
-    # # 删除团队文档
+    # 删除团队文档
     db.session.commit()
     all_document=db.session.query(Document).filter(Document.group_id==groupid).all()
     for document in all_document:
@@ -705,9 +719,3 @@ def del_new_notice():
         'message':'success'
     }
     return jsonify(response)
-
-# type
-# 0:我被踢出团队 只传content "a将你踢出了团队"
-# 1:我被邀请加入某个团队，我要选择是否接受加入团队 传group_id、content 发送给sender "a通过/拒绝了你的邀请"
-# 2:我邀请他人加入某个团队，对方通过/拒绝 传group_id、content 发送给receiver "a邀请你加入团队xxx"
-# 3:我创建的文档被评论 评论者传给创建者 document_id、content 发送 "你的文档xxx被a评论"
