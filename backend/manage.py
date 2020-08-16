@@ -65,7 +65,8 @@ def user_to_content(user):
         'id': user.id,
         'username': user.username,
         'email': user.email,
-        'password': user.password
+        'password': user.password,
+        'description': user.description
     }
     return content
 

@@ -233,7 +233,12 @@ def queryuser():
                 check=0
                 continue
         if check==1:
-            res.append(user_to_content(user))
+            content={
+                'id':user.id,
+                'username':user.username,
+                'email':user.email
+            }
+            res.append(content)
     return jsonify(res)
 
 # 邀请加入团队(发送邀请信息)
@@ -265,7 +270,12 @@ def get_user_bygroup():
     all_group_user=get_user_ingroup(request.form['groupid'])
     res=[]
     for user in all_group_user:
-       res.append(user_to_content(user))
+        content={
+            'id':user.id,
+            'username':user.username,
+            'email':user.email
+        }
+        res.append(content)
     return jsonify(res)
 
 # 删除团队成员
@@ -603,7 +613,12 @@ def query_notindoc_user():
     all_document_user=get_user_indocument(document_id)
     for user in all_user:
         if user not in all_document_user:
-            res.append(user_to_content(user))
+            content={
+                'id':user.id,
+                'username':user.username,
+                'email':user.email
+            }
+            res.append(content)
     return jsonify(res)
 
 # 个人文档分享
