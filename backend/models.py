@@ -46,10 +46,16 @@ class Document(db.Model):
     creator_id=db.Column(db.Integer)
     created_time=db.Column(db.DateTime)
     modified_time=db.Column(db.DateTime)
+    content=db.Column(db.TEXT)
+
     modify_right=db.Column(db.Integer)
     share_right=db.Column(db.Integer)
     discuss_right=db.Column(db.Integer)
-    content=db.Column(db.TEXT)
+    
+    others_modify_right=db.Column(db.Integer)
+    others_share_right=db.Column(db.Integer)
+    others_discuss_right=db.Column(db.Integer)   
+    
     recycled=db.Column(db.Integer)
     is_occupied=db.Column(db.Integer) # 0: Not occupied, 1: Occupied
     group_id=db.Column(db.Integer) # 0: Personal document, not 0: Group document
@@ -72,6 +78,8 @@ class DocumentUser(db.Model):
     favorited=db.Column(db.Integer)
     modified_time=db.Column(db.DateTime)
     # recycled=db.Column(db.Integer)
+    type=db.Column(db.Integer) # 0: personal 1: group 2: 被分享的团队文档
+
     def __repr__(self):
         return "<DocumentUser %r>" % self.document_user_id
 
