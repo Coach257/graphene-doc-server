@@ -242,12 +242,12 @@ def queryuser():
     return jsonify(res)
 
 # 邀请加入团队(发送邀请信息)
-@app.route('/api/invite_user',methods=['POST'])
+@app.route('/api/invite_user/',methods=['POST'])
 def invite_user():
     group_id=request.form['group_id']
     group=Group.query.filter(Group.id==group_id).first()
     user_id=request.form['user_id']
-    sender_id=request.form['leader_id']
+    sender_id=User.query.filter(User.username==request.form['leader_username']).first().id
     sender=User.query.filter(User.id==sender_id).first()
     id=get_newid()
     now=datetime.datetime.now()
@@ -279,7 +279,7 @@ def get_user_bygroup():
     return jsonify(res)
 
 # 删除团队成员
-@app.route('/api/delete_user',methods=['POST'])
+@app.route('/api/delete_user/',methods=['POST'])
 def delete_user():
     groupid=request.form['groupid']
     group=Group.query.filter(Group.id==groupid).first()
@@ -988,7 +988,7 @@ def get_all_modified_time():
 ####################################
 
 # 获取用户未读所有的消息
-@app.route('/api/get_all_notice',methods=['POST'])
+@app.route('/api/get_all_notice/',methods=['POST'])
 def get_all_notice():
     all_notice=Notice.query.filter(Notice.receiver_id==request.form['receiver_id'])
     res=[]
@@ -997,7 +997,7 @@ def get_all_notice():
     return jsonify(res)
 
 # 未读转已读(直接从数据库中删除)
-@app.route('/api/del_new_notice',methods=['POST'])
+@app.route('/api/del_new_notice/',methods=['POST'])
 def del_new_notice():
     new_notice_id=request.form['new_notice_id']
     db.session.query(Notice).filter(Notice.id==new_notice_id).delete()
@@ -1008,7 +1008,7 @@ def del_new_notice():
     return jsonify(response)
 
 # 查看所有不需要确认的消息(type=0,1,3,4,5)
-@app.route('/api/view_non_confirm_notice',methods=['POST'])
+@app.route('/api/view_non_confirm_notice/',methods=['POST'])
 def view_non_confirm_notice():
     all_notice=Notice.query.filter(Notice.receiver_id==request.form['receiver_id'])
     res=[]
@@ -1020,7 +1020,7 @@ def view_non_confirm_notice():
 
 
 # 查看所有需要确认的消息(type=2) 需要有两个button，分别发出type=1、5的消息
-@app.route('/api/view_confirm_notice',methods=['POST'])
+@app.route('/api/view_confirm_notice/',methods=['POST'])
 def view_confirm_notice():
     all_notice=Notice.query.filter(Notice.receiver_id==request.form['receiver_id'])
     res=[]
