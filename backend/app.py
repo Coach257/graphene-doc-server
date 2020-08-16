@@ -336,15 +336,19 @@ def create_personal_doc():
             modify_right=request.form['modify_right'],
             share_right=request.form['share_right'],
             discuss_right=request.form['discuss_right'],
+            others_modify_right=-1,
+            others_share_right=-1,
+            others_discuss_right=-1,
             content=content,recycled=0,is_occupied=0,
-            group_id=0,modified_time=0)
+            group_id=0,
+            modified_time=0)
         db.session.add(newDocument)
         db.session.commit()
 
         id=get_newid()
         newDU=DocumentUser(id=id,document_id=newDocument.id,
             user_id=user.id,last_watch=0,
-            favorited=0,modified_time=0)
+            favorited=0,modified_time=0,type=0)
         db.session.add(newDU)
         db.session.commit()
         # # 赋予创建者以文档的全部权限
@@ -382,6 +386,9 @@ def create_group_doc():
             modify_right=request.form['modify_right'],
             share_right=request.form['share_right'],
             discuss_right=request.form['discuss_right'],
+            others_modify_right=request.form['others_modify_right'],
+            others_share_right=request.form['others_share_right'],
+            others_discuss_right=request.form['others_discuss_right'],
             content=content,recycled=0,is_occupied=0,
             group_id=group_id,modified_time=0)
         db.session.add(newDocument)
@@ -393,7 +400,7 @@ def create_group_doc():
         for member in all_member:
             newDU=DocumentUser(id=id+i,document_id=newDocument.id,
             user_id=member.user_id,last_watch=0,
-            favorited=0,modified_time=0)
+            favorited=0,modified_time=0,type=1)
             i=i+1
             db.session.add(newDU)
         db.session.commit()
@@ -416,6 +423,18 @@ def create_group_doc():
     }
     return jsonify(response)
 
+# 查看我拥有的文档(除团队文档外的文档)
+@app.route('/api/my_docs/',methods=['POST'])
+def my_docs():
+    user=User.query.filter(User.username==request.form['username']).first()
+    all_document_id=DocumentUser.query.filter(and_(DocumentUser.user_id==user.id,Document.recycled==0)).all()
+    res=[]
+    for document_id in all_document_id:
+        if document_id.recycled == 0 and document_id != 1:
+            doc=Document.query.filter(document_id==Document.id).first()
+            res.append(document_to_content(doc))
+    return jsonify(res)
+
 # 获取我创建的所有文档的信息
 @app.route('/api/my_created_docs/',methods=['POST'])
 def my_created_docs():
@@ -435,6 +454,62 @@ def my_deleted_docs():
     for document in all_document:
         res.append(document_to_content(document))
     return jsonify(res)
+
+# 传递权限信息
+@app.route('api/tell_doc_right',methods=['POST'])
+def tell_doc_right():
+    if request.method == 'POST':
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user=User.query.filter(User.username==request.form['username']).first()
+        DUlink=db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+        if(DUlink==Null):
+            response={
+                'modify_right':False,
+                'share_right':False,
+                'discuss_right':False,
+                'others_modify_right':False,
+                'others_share_right':False,
+                'others_discuss_right':False,
+                'type':-1
+            }
+        elif user.id==document.creator_id:
+            if document.group_id!=0:
+                type=0
+            else:
+                type=1
+            response={
+                'modify_right':True,
+                'share_right':True,
+                'discuss_right':True,
+                'others_modify_right':True,
+                'others_share_right':True,
+                'others_discuss_right':True,
+                'type':type
+            }
+        else:
+            if document.group_id!=0:
+                type=0
+            else:
+                type=1
+
+            modify_right=toTF(document.modify_right)
+            share_right=toTF(document.share_right)
+            discuss_right=toTF(document.discuss_right)
+            
+            others_modify_right=toTF(document.others_modify_right)
+            others_share_right=toTF(document.others_share_right)
+            others_discuss_right=toTF(document.others_discuss_right)
+
+            response={
+                'modify_right':modify_right,
+                'share_right':share_right,
+                'discuss_right':discuss_right,
+                'others_modify_right':others_modify_right,
+                'others_share_right':others_share_right,
+                'others_discuss_right':others_discuss_right,
+                'type':type
+            }
+    return jsonify(response)     
 
 # 获取文档
 @app.route('/api/get_doccontent/', methods=['POST'])
@@ -523,9 +598,9 @@ def query_notindoc_user():
             res.append(user_to_content(user))
     return jsonify(res)
 
-# 文档分享
-@app.route('/api/share_to/',methods=['POST'])
-def share_to():
+# 个人文档分享
+@app.route('/api/pernal_doc_share_to/',methods=['POST'])
+def personal_share_to():
     msg=''
     if request.method=='POST':
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
@@ -534,7 +609,37 @@ def share_to():
         id=get_newid()
         newDU=DocumentUser(id=id,document_id=document.id,
             user_id=target_user.id,last_watch=0,
-            favorited=0)
+            favorited=0,type=0)
+        
+        # 发送消息
+        id=get_newid()
+        now=datetime.datetime.now()
+        send_time=now.strftime('%Y-%m-%d')
+        content=send_time+", "+user.username+"分享给你了一个文档("+document.title+")"
+        new_notice=Notice(id=id,sender_id=user.id,receiver_id=target_user.id,document_id=document.id,
+            group_id=0,send_time=now,content=content,type=4
+        )
+        msg='success'
+        db.session.add(new_notice)
+        db.session.add(newDU)
+        db.session.commit()
+    response={
+        'message':msg
+    }
+    return jsonify(response)
+
+# 团队文档分享
+@app.route('/api/group_doc_share_to/',methods=['POST'])
+def group_doc_share_to():
+    msg=''
+    if request.method=='POST':
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.id==request.form['user_id']).first()
+        target_user=User.query.filter(User.id==request.form['target_user_id']).first()
+        id=get_newid()
+        newDU=DocumentUser(id=id,document_id=document.id,
+            user_id=target_user.id,last_watch=0,
+            favorited=0,type=2)
         
         # 发送消息
         id=get_newid()
@@ -744,9 +849,9 @@ def show_recent_doc():
 #         }
 #         return jsonify(response)
 
-# 文档创建者修改权限
-@app.route('/api/modify_right/', methods=['POST'])
-def modify_right():
+# 个人文档创建者修改权限
+@app.route('/api/modify_personal_doc_right/', methods=['POST'])
+def modify_personal_doc_right():
     msg=''
     if request.method=='POST':
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
@@ -766,6 +871,30 @@ def modify_right():
         # db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"modify_right":modify_right})
         # db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"delete_right":delete_right})
         # db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"discuss_right":discuss_right})
+        db.session.commit()
+        response={
+            'message': msg
+        }
+        return jsonify(response)
+
+# 团队文档创建者修改权限
+@app.route('/api/modify_group_doc_right/', methods=['POST'])
+def modify_group_doc_right():
+    msg=''
+    if request.method=='POST':
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        user = User.query.filter(User.username==request.form['username']).first()
+        share_right=request.form['share_right']
+        modify_right=request.form['modify_right']
+        discuss_right=request.form['discuss_right']
+        others_modify_right=request.form['others_modify_right'],
+        others_share_right=request.form['others_share_right'],
+        others_discuss_right=request.form['others_discuss_right'],
+        db.session.query(Document).filter(Document.id==document.id).update({"share_right":share_right,
+            "modify_right":modify_right,"discuss_right":discuss_right,
+            "others_share_right":others_share_right,"others_modify_right":others_modify_right,
+            "others_discuss_right":others_discuss_right})
+        msg="success"
         db.session.commit()
         response={
             'message': msg
