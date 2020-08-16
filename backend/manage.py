@@ -110,16 +110,37 @@ def document_to_content(document):
 
 
 def notice_to_content(notice):
-    content = {
-        'id': notice.id,
-        'sender_id': notice.sender_id,
-        'receiver_id': notice.receiver_id,
-        'document_id': notice.document_id,
-        'group_id': notice.group_id,
-        'send_time': notice.send_time,
-        'content': notice.content,
-        'type': notice.type
-    }
+    type=notice.type
+    sender=User.query.filter(User.id==notice.sender_id).first()
+    receiver=User.query.filter(User.id==notice.receiver_id).first()
+    if(type==3 or type==4): # 关于文档
+        document=Document.query.filter(Document.id==notice.document_id).first()
+        content = {
+            'id': notice.id,
+            'sender_id': notice.sender_id,
+            'sender_name':sender.username,
+            'receiver_id': notice.receiver_id,
+            'receiver_name':receiver.username,
+            'document_id': notice.document_id,
+            'document_title':document.title,
+            'send_time': notice.send_time,
+            'content': notice.content,
+            'type': notice.type
+        }
+    elif(type==0 or type==1 or type==2 or type==5): # 关于小组
+        group=Group.query.filter(Group.id==notice.group_id).first()
+        content = {
+            'id': notice.id,
+            'sender_id': notice.sender_id,
+            'sender_name':sender.username,
+            'receiver_id': notice.receiver_id,
+            'receiver_name':receiver.username,
+            'group_id': notice.group_id,
+            'group_name':group.groupname,
+            'send_time': notice.send_time,
+            'content': notice.content,
+            'type': notice.type
+        }
     return content
 
 def modifiedtime_to_content(du,user):
