@@ -772,16 +772,28 @@ def create_comment():
         user = User.query.filter(User.username==request.form['username']).first()
         creator_id=user.id
         document_id=request.form['DocumentID']
+        document=Document.query.filter(Document.id==document_id).first()
         now=datetime.datetime.now()
         content=request.form['content']
         msg="success"
         newComment=Comment(id=id,document_id=document_id,creator_id=creator_id,content=content,created_time=now)
         db.session.add(newComment)
         db.session.commit()
-        response={
-            'message': msg
-        }
-        return jsonify(response)
+
+        # 发送消息
+        id=get_newid()
+        send_time=now.strftime('%Y-%m-%d')
+        content=send_time+", "+user.username+"给你的文档("+document.title+")发了一条评论"
+        new_notice=Notice(id=id,sender_id=user.id,receiver_id=document.creator_id,document_id=document_id,
+            group_id=0,send_time=now,content=content,type=3
+        )
+        db.session.add(new_notice)
+        db.session.commit()
+
+    response={
+        'message': msg
+    }
+    return jsonify(response)
 
 # 获取文档的所有评论
 @app.route('/api/get_all_comment/', methods=['POST'])
@@ -792,11 +804,6 @@ def get_all_comment():
         user=User.query.filter(User.id==comment.creator_id).first()
         res.append(comment_to_content(comment,user))
     return jsonify(res)
-
-if __name__ == '__main__':
-    app.run(debug = True)
-
-
 
 ####################################
 ########## 消息 操作 ###############
