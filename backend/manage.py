@@ -135,6 +135,7 @@ def sendmsg(str):
     }
     return jsonify(context)
 
-def toTF(str):
-    if str=='1':return True
+def toTF(num):
+    if num==1:
+        return True
     return False

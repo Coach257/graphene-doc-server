@@ -184,7 +184,7 @@ def addgroupmember():
         id=get_newid()
         newDU=DocumentUser(id=id,document_id=document.id,
             user_id=userid,last_watch=0,
-            favorited=0)
+            favorited=0,type=1)
         db.session.add(newDU)
         db.session.commit()
     response={
@@ -336,9 +336,9 @@ def create_personal_doc():
             modify_right=request.form['modify_right'],
             share_right=request.form['share_right'],
             discuss_right=request.form['discuss_right'],
-            others_modify_right=-1,
-            others_share_right=-1,
-            others_discuss_right=-1,
+            others_modify_right=request.form['modify_right'],
+            others_share_right=request.form['share_right'],
+            others_discuss_right=request.form['discuss_right'],
             content=content,recycled=0,is_occupied=0,
             group_id=0,
             modified_time=0)
@@ -456,59 +456,66 @@ def my_deleted_docs():
     return jsonify(res)
 
 # 传递权限信息
-@app.route('/api/tell_doc_right',methods=['POST'])
+@app.route('/api/tell_doc_right/',methods=['POST'])
 def tell_doc_right():
-    if request.method == 'POST':
-        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
-        user=User.query.filter(User.username==request.form['username']).first()
-        DUlink=db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
-        if(DUlink==Null):
-            response={
-                'modify_right':False,
-                'share_right':False,
-                'discuss_right':False,
-                'others_modify_right':False,
-                'others_share_right':False,
-                'others_discuss_right':False,
-                'type':-1
-            }
-        elif user.id==document.creator_id:
-            if document.group_id!=0:
-                type=0
-            else:
-                type=1
-            response={
-                'modify_right':True,
-                'share_right':True,
-                'discuss_right':True,
-                'others_modify_right':True,
-                'others_share_right':True,
-                'others_discuss_right':True,
-                'type':type
-            }
+    document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+    user=User.query.filter(User.username==request.form['username']).first()
+    DUlink=db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+    if(DUlink==None):
+        response={
+            'watch_right':False,
+            'modify_right':False,
+            'share_right':False,
+            'discuss_right':False,
+            'others_modify_right':False,
+            'others_share_right':False,
+            'others_discuss_right':False,
+            'others_watch_right':False,
+            'doctype':-1,
+            'usertype':-1
+        }
+    elif user.id==document.creator_id:
+        if document.group_id!=0:
+            type=0
         else:
-            if document.group_id!=0:
-                type=0
-            else:
-                type=1
+            type=1
+        response={
+            'watch_right':True,
+            'modify_right':True,
+            'share_right':True,
+            'discuss_right':True,
+            'others_modify_right':True,
+            'others_share_right':True,
+            'others_discuss_right':True,
+            'others_watch_right':True,
+            'doctype':type,
+            'usertype':DUlink.type
+        }
+    else:
+        if document.group_id!=0:
+            type=0
+        else:
+            type=1
 
-            modify_right=toTF(document.modify_right)
-            share_right=toTF(document.share_right)
-            discuss_right=toTF(document.discuss_right)
-            
-            others_modify_right=toTF(document.others_modify_right)
-            others_share_right=toTF(document.others_share_right)
-            others_discuss_right=toTF(document.others_discuss_right)
-
-            response={
-                'modify_right':modify_right,
-                'share_right':share_right,
-                'discuss_right':discuss_right,
-                'others_modify_right':others_modify_right,
-                'others_share_right':others_share_right,
-                'others_discuss_right':others_discuss_right,
-                'type':type
-            }
+        modify_right=toTF(document.modify_right)
+        share_right=toTF(document.share_right)
+        discuss_right=toTF(document.discuss_right)
+        
+        others_modify_right=toTF(document.others_modify_right)
+        others_share_right=toTF(document.others_share_right)
+        others_discuss_right=toTF(document.others_discuss_right)
+        response={
+            'watch_right':True,
+            'modify_right':modify_right,
+            'share_right':share_right,
+            'discuss_right':discuss_right,
+            'others_modify_right':others_modify_right,
+            'others_share_right':others_share_right,
+            'others_discuss_right':others_discuss_right,
+            'others_watch_right':True,
+            'doctype':type,
+            'usertype':DUlink.type
+        }
     return jsonify(response)     
 
 # 获取文档
@@ -810,6 +817,8 @@ def show_recent_doc():
     all_documentuser=db.session.query(DocumentUser).filter(DocumentUser.user_id==user.id).order_by(-DocumentUser.last_watch).all()
     for DU in all_documentuser:
         document=db.session.query(Document).filter(Document.id==DU.document_id).first()
+        if(document==None):
+            continue
         if document.recycled == 0 :
             res.append(document_to_content(document))
     return jsonify(res)
