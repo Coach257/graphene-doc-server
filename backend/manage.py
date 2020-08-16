@@ -52,6 +52,13 @@ def get_user_ingroup(groupid):
         all_user += user
     return all_user
 
+def get_user_indocument(documentid):
+    all_DU=DocumentUser.query.filter(DocumentUser.document_id==documentid)
+    all_user=[]
+    for du in all_DU:
+        user=User.query.filter(User.id==du.user_id).all()
+        all_user+=user
+    return all_user
 
 def user_to_content(user):
     content = {

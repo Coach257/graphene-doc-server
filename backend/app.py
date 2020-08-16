@@ -510,6 +510,20 @@ def modify_doc():
     }
     return jsonify(response)
 
+# 文档想要分享给其他用户前，需要先检索用户，根据用户名检索，返回所有不拥有该文档的用户
+# tested
+@app.route('/api/query_notindoc_user/',methods=['POST'])
+def query_notindoc_user():
+    keyword=request.form['keyword']
+    document_id=request.form['document_id']
+    res=[]
+    all_user=get_user_bykeyword(keyword)
+    all_document_user=get_user_indocument(document_id)
+    for user in all_user:
+        if user not in all_document_user:
+            res.append(user_to_content(user))
+    return jsonify(res)
+
 # 文档分享
 @app.route('/api/share_to/',methods=['POST'])
 def share_to():
