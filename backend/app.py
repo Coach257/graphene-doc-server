@@ -456,7 +456,7 @@ def my_deleted_docs():
     return jsonify(res)
 
 # 传递权限信息
-@app.route('api/tell_doc_right',methods=['POST'])
+@app.route('/api/tell_doc_right',methods=['POST'])
 def tell_doc_right():
     if request.method == 'POST':
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
