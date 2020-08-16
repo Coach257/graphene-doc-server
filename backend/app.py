@@ -829,5 +829,28 @@ def del_new_notice():
     }
     return jsonify(response)
 
+# 查看所有不需要确认的消息(type=0,1,3,4,5)
+@app.route('/api/view_non_confirm_notice',methods=['POST'])
+def view_non_confirm_notice():
+    all_notice=Notice.query.filter(Notice.receiver_id==request.form['receiver_id'])
+    res=[]
+    for notice in all_notice:
+        stat=notice.type
+        if(stat==0 or stat==1 or stat==3 or stat==4 or stat==5):
+            res.append(notice_to_content(notice))
+    return jsonify(res)
+
+
+# 查看所有需要确认的消息(type=2) 需要有两个button，分别发出type=1、5的消息
+@app.route('/api/view_confirm_notice',methods=['POST'])
+def view_confirm_notice():
+    all_notice=Notice.query.filter(Notice.receiver_id==request.form['receiver_id'])
+    res=[]
+    for notice in all_notice:
+        stat=notice.type
+        if(stat==2):
+            res.append(notice_to_content(notice))
+    return jsonify(res)
+
 if __name__ == '__main__':
     app.run(debug = True)
