@@ -45,7 +45,7 @@ def get_user_bykeyword(keyword):
 
 
 def get_user_ingroup(groupid):
-    all_GroupMember = GroupMember.query.filter(GroupMember.group_id == groupid)
+    all_GroupMember = GroupMember.query.filter(GroupMember.group_id == groupid).all()
     all_user = []
     for groupmember in all_GroupMember:
         user = User.query.filter(User.id == groupmember.user_id).all()
@@ -53,7 +53,7 @@ def get_user_ingroup(groupid):
     return all_user
 
 def get_user_indocument(documentid):
-    all_DU=DocumentUser.query.filter(DocumentUser.document_id==documentid)
+    all_DU=DocumentUser.query.filter(DocumentUser.document_id==documentid).all()
     all_user=[]
     for du in all_DU:
         user=User.query.filter(User.id==du.user_id).all()

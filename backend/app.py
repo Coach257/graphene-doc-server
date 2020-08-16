@@ -130,7 +130,7 @@ def creategroup():
 @app.route('/api/mygroup/',methods=['POST'])
 def mygroup():
     user=get_user_byusername(request.form['username'])
-    all_groupmember=GroupMember.query.filter(GroupMember.user_id==user.id)
+    all_groupmember=GroupMember.query.filter(GroupMember.user_id==user.id).all()
     res=[]
     for groupmember in all_groupmember:
         group=Group.query.filter(Group.id==groupmember.group_id).first()
