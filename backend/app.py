@@ -69,7 +69,7 @@ def regist():
         else:
             id=get_newid()
             newUser=User(id=id, username=request.form['username'], password=request.form['password'],
-                email=request.form['email'], desciption=request.form['description'])
+                email=request.form['email'], desciption='')
             db.session.add(newUser)
             db.session.commit()
     return sendmsg('success')
@@ -99,7 +99,8 @@ def modify_user_info():
                 return sendmsg('fail')
         db.session.query(User).filter(User.username==request.form['username']).update({"password":request.form['new_password1'],
             "username":request.form['new_username'],
-            "email":request.form['new_email']})
+            "email":request.form['new_email'],
+            "description":request.form['new_description']})
         # db.session.query(User).filter(User.username==session['username']).update({"username":request.form['new_username']})
         # db.session.query(User).filter(User.username==session['username']).update({"email":request.form['new_email']})
         db.session.commit()
