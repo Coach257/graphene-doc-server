@@ -991,8 +991,8 @@ def get_all_modified_time():
 # 获取用户未读所有的消息
 @app.route('/api/get_all_notice/',methods=['POST'])
 def get_all_notice():
-    receiver=User.query.filter(User.username==request.form['receiver_username'])
-    all_notice=Notice.query.filter(Notice.receiver_id==receiver.id)
+    receiver=User.query.filter(User.username==request.form['receiver_username']).first()
+    all_notice=Notice.query.filter(Notice.receiver_id==receiver.id).all()
     res=[]
     for notice in all_notice:
         res.append(notice_to_content(notice))
@@ -1012,8 +1012,8 @@ def del_new_notice():
 # 查看所有不需要确认的消息(type=0,1,3,4,5)
 @app.route('/api/view_non_confirm_notice/',methods=['POST'])
 def view_non_confirm_notice():
-    receiver=User.query.filter(User.username==request.form['receiver_username'])
-    all_notice=Notice.query.filter(Notice.receiver_id==receiver.id)
+    receiver=User.query.filter(User.username==request.form['receiver_username']).first()
+    all_notice=Notice.query.filter(Notice.receiver_id==receiver.id).all()
     res=[]
     for notice in all_notice:
         stat=notice.type
@@ -1025,8 +1025,8 @@ def view_non_confirm_notice():
 # 查看所有需要确认的消息(type=2) 需要有两个button，分别发出type=1、5的消息
 @app.route('/api/view_confirm_notice/',methods=['POST'])
 def view_confirm_notice():
-    receiver=User.query.filter(User.username==request.form['receiver_username'])
-    all_notice=Notice.query.filter(Notice.receiver_id==receiver.id)
+    receiver=User.query.filter(User.username==request.form['receiver_username']).first()
+    all_notice=Notice.query.filter(Notice.receiver_id==receiver.id).all()
     res=[]
     for notice in all_notice:
         stat=notice.type
