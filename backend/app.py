@@ -68,7 +68,8 @@ def regist():
             return sendmsg('fail')
         else:
             id=get_newid()
-            newUser=User(id=id, username=request.form['username'], password=request.form['password'], email=request.form['email'])
+            newUser=User(id=id, username=request.form['username'], password=request.form['password'],
+                email=request.form['email'], desciption=request.form['description'])
             db.session.add(newUser)
             db.session.commit()
     return sendmsg('success')
