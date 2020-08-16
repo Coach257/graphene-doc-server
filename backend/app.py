@@ -344,7 +344,7 @@ def create_personal_doc():
         id=get_newid()
         newDU=DocumentUser(id=id,document_id=newDocument.id,
             user_id=user.id,last_watch=0,
-            favorited=0)
+            favorited=0,modified_time=0)
         db.session.add(newDU)
         db.session.commit()
         # # 赋予创建者以文档的全部权限
@@ -393,7 +393,7 @@ def create_group_doc():
         for member in all_member:
             newDU=DocumentUser(id=id+i,document_id=newDocument.id,
             user_id=member.user_id,last_watch=0,
-            favorited=0)
+            favorited=0,modified_time=0)
             i=i+1
             db.session.add(newDU)
         db.session.commit()
@@ -495,16 +495,15 @@ def modify_doc():
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
         user = User.query.filter(User.username==request.form['username']).first()
         # TODO: 目前只有创建者能修改文档
-        if (document!=None) and (str(document.creator_id)==str(user.id)):
-            msg="success"
-            now=datetime.datetime.now()
-            content=request.form['content']
-            db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"content":content,
-                "modified_time":now
-            })
-            db.session.commit()
-        else:
-            msg="fail"
+        msg="success"
+        now=datetime.datetime.now()
+        content=request.form['content']
+        db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"content":content,
+            "modified_time":now
+        })
+        db.session.query(DocumentUser).filter(and_(DocumentUser.user_id==user.id,
+            DocumentUser.document_id==request.form['DocumentID'])).update({"modified_time":now})
+        db.session.commit()
     response={
         'message':msg
     }
@@ -817,6 +816,17 @@ def get_all_comment():
     for comment in all_comment:
         user=User.query.filter(User.id==comment.creator_id).first()
         res.append(comment_to_content(comment,user))
+    res.reverse()
+    return jsonify(res)
+
+# 获取文档所有修改记录
+@app.route('/api/get_all_modified_time/',methods=['POST'])
+def get_all_modified_time():
+    res=[]
+    all_modified_time=DocumentUser.query.filter(and_(DocumentUser.id==request.form['DocumentID'],DocumentUser.modified_time!=0)).order_by(-DocumentUser.modified_time).all()
+    for tmp in all_modified_time:
+        user=User.query.filter(User.id==tmp.user_id).first()
+        res.append(modifiedtime_to_content(tmp,user))
     return jsonify(res)
 
 ####################################

@@ -70,6 +70,7 @@ class DocumentUser(db.Model):
     # discuss_right=db.Column(db.Integer)
     last_watch=db.Column(db.DateTime)
     favorited=db.Column(db.Integer)
+    modified_time=db.Column(db.DateTime)
     # recycled=db.Column(db.Integer)
     def __repr__(self):
         return "<DocumentUser %r>" % self.document_user_id

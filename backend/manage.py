@@ -121,6 +121,13 @@ def notice_to_content(notice):
     }
     return content
 
+def modifiedtime_to_content(du,user):
+    content = {
+        'document_id': du.document_id,
+        'username':user.username,
+        'datetime':du.modified_time
+    }
+    return content
 
 def sendmsg(str):
     context = {
