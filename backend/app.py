@@ -427,11 +427,11 @@ def create_group_doc():
 @app.route('/api/my_docs/',methods=['POST'])
 def my_docs():
     user=User.query.filter(User.username==request.form['username']).first()
-    all_document_id=DocumentUser.query.filter(and_(DocumentUser.user_id==user.id,Document.recycled==0)).all()
+    all_du=DocumentUser.query.filter(and_(DocumentUser.user_id==user.id,DocumentUser.recycled==0)).all()
     res=[]
-    for document_id in all_document_id:
-        if document_id.recycled == 0 and document_id != 1:
-            doc=Document.query.filter(document_id==Document.id).first()
+    for du in all_du:
+        if du.recycled == 0 and du.type != 1:
+            doc=Document.query.filter(du.document_id==Document.id).first()
             res.append(document_to_content(doc))
     return jsonify(res)
 
