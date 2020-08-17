@@ -117,7 +117,7 @@ class Notice(db.Model):
 class Message(db.Model):
     __tablename__='Message'
     id=db.Column(db.Integer,primary_key=True)
-    sender_id=db.Column(db.String(255))
-    receiver_id=db.Column(db.String(255))
+    sender_id=db.Column(db.Integer)
+    receiver_id=db.Column(db.Integer)
     send_time=db.Column(db.DateTime)
     content=db.Column(db.TEXT)
