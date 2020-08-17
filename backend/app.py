@@ -188,7 +188,7 @@ def addgroupmember():
     id=get_newid()
     now=datetime.datetime.now()
     send_time=now.strftime('%Y-%m-%d')
-    content=send_time+", "+user.username+"通过了你的邀请，加入团队("+group.groupname+")"
+    content=user.username+"通过了你的邀请，加入团队("+group.groupname+")"
     new_notice=Notice(id=id,sender_id=userid,receiver_id=group.leaderid,document_id=0,
         group_id=groupid,send_time=now,content=content,type=1
     )
@@ -221,7 +221,7 @@ def refuse_groupmember():
     id=get_newid()
     now=datetime.datetime.now()
     send_time=now.strftime('%Y-%m-%d')
-    content=send_time+", "+user.username+"拒绝了你的邀请，不加入团队("+group.groupname+")"
+    content=user.username+"拒绝了你的邀请，不加入团队("+group.groupname+")"
     new_notice=Notice(id=id,sender_id=userid,receiver_id=group.leaderid,document_id=0,
         group_id=groupid,send_time=now,content=content,type=5
     )
@@ -269,7 +269,7 @@ def invite_user():
     id=get_newid()
     now=datetime.datetime.now()
     send_time=now.strftime('%Y-%m-%d')
-    content=send_time+", "+sender.username+"邀请你加入团队("+group.groupname+")"
+    content=sender.username+"邀请你加入团队("+group.groupname+")"
     new_notice=Notice(id=id,sender_id=sender_id,receiver_id=user_id,document_id=0,
         group_id=group_id,send_time=now,content=content,type=2
     )
@@ -288,7 +288,7 @@ def apply_in_group():
     id=get_newid()
     now=datetime.datetime.now()
     send_time=now.strftime('%Y-%m-%d')
-    content=send_time+", "+user.username+"申请加入团队("+group.groupname+")"
+    content=user.username+"申请加入团队("+group.groupname+")"
     new_notice=Notice(id=id,sender_id=user.id,receiver_id=group.leaderid,document_id=0,
         group_id=group.id,send_time=now,content=content,type=6
     )
@@ -318,7 +318,7 @@ def accept_application_addgroupmember():
     id=id+1
     now=datetime.datetime.now()
     send_time=now.strftime('%Y-%m-%d')
-    content=send_time+", "+leader.username+"通过了你的申请，你已加入团队("+group.groupname+")"
+    content=leader.username+"通过了你的申请，你已加入团队("+group.groupname+")"
     new_notice=Notice(id=id,sender_id=leader.id,receiver_id=user.id,document_id=0,
         group_id=groupid,send_time=now,content=content,type=7
     )
@@ -351,7 +351,7 @@ def refuse_application_addgroupmember():
     id=id+1
     now=datetime.datetime.now()
     send_time=now.strftime('%Y-%m-%d')
-    content=send_time+", "+leader.username+"拒绝了你的申请，加入团队("+group.groupname+")失败"
+    content=leader.username+"拒绝了你的申请，加入团队("+group.groupname+")失败"
     new_notice=Notice(id=id,sender_id=leader.id,receiver_id=user.id,document_id=0,
         group_id=groupid,send_time=now,content=content,type=8
     )
@@ -393,7 +393,7 @@ def delete_user():
     id=get_newid()
     now=datetime.datetime.now()
     send_time=now.strftime('%Y-%m-%d')
-    content=send_time+", "+sender.username+"将你踢出了团队("+group.groupname+")"
+    content=sender.username+"将你踢出了团队("+group.groupname+")"
     new_notice=Notice(id=id,sender_id=sender_id,receiver_id=userid,document_id=0,
         group_id=groupid,send_time=now,content=content,type=0
     )
@@ -738,7 +738,7 @@ def personal_share_to():
         id=get_newid()
         now=datetime.datetime.now()
         send_time=now.strftime('%Y-%m-%d')
-        content=send_time+", "+user.username+"分享给你了一个文档("+document.title+")"
+        content=user.username+"分享给你了一个文档("+document.title+")"
         new_notice=Notice(id=id,sender_id=user.id,receiver_id=target_user.id,document_id=document.id,
             group_id=0,send_time=now,content=content,type=4
         )
@@ -768,7 +768,7 @@ def group_doc_share_to():
         id=get_newid()
         now=datetime.datetime.now()
         send_time=now.strftime('%Y-%m-%d')
-        content=send_time+", "+user.username+"分享给你了一个文档("+document.title+")"
+        content=user.username+"分享给你了一个文档("+document.title+")"
         new_notice=Notice(id=id,sender_id=user.id,receiver_id=target_user.id,document_id=document.id,
             group_id=0,send_time=now,content=content,type=4
         )
@@ -1050,7 +1050,7 @@ def create_comment():
         # 发送消息
         id=get_newid()
         send_time=now.strftime('%Y-%m-%d')
-        content=send_time+", "+user.username+"给你的文档("+document.title+")发了一条评论"
+        content=user.username+"给你的文档("+document.title+")发了一条评论"
         new_notice=Notice(id=id,sender_id=user.id,receiver_id=document.creator_id,document_id=document_id,
             group_id=0,send_time=now,content=content,type=3
         )
@@ -1110,7 +1110,7 @@ def del_new_notice():
     }
     return jsonify(response)
 
-# 查看所有不需要确认的消息(type=0,1,3,4,5)
+# 查看所有不需要确认的消息(type=0,1,3,4,5,7,8)
 @app.route('/api/view_non_confirm_notice/',methods=['POST'])
 def view_non_confirm_notice():
     receiver=User.query.filter(User.username==request.form['receiver_username']).first()
@@ -1118,7 +1118,7 @@ def view_non_confirm_notice():
     res=[]
     for notice in all_notice:
         stat=notice.type
-        if(stat==0 or stat==1 or stat==3 or stat==4 or stat==5):
+        if(stat==0 or stat==1 or stat==3 or stat==4 or stat==5 or stat==7 or stat==8):
             res.append(notice_to_content(notice))
     return jsonify(res)
 

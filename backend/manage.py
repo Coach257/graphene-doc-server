@@ -113,6 +113,7 @@ def notice_to_content(notice):
     type=notice.type
     sender=User.query.filter(User.id==notice.sender_id).first()
     receiver=User.query.filter(User.id==notice.receiver_id).first()
+    content={}
     if(type==3 or type==4): # 关于文档
         document=Document.query.filter(Document.id==notice.document_id).first()
         content = {
@@ -121,13 +122,15 @@ def notice_to_content(notice):
             'sender_name':sender.username,
             'receiver_id': notice.receiver_id,
             'receiver_name':receiver.username,
+            'group_id': "",
+            'group_name':"",
             'document_id': notice.document_id,
             'document_title':document.title,
-            'send_time': notice.send_time,
+            'datetime': notice.send_time,
             'content': notice.content,
             'type': notice.type
         }
-    elif(type==0 or type==1 or type==2 or type==5): # 关于小组
+    elif(type==0 or type==1 or type==2 or type==5 or type==7 or type==8): # 关于小组
         group=Group.query.filter(Group.id==notice.group_id).first()
         content = {
             'id': notice.id,
@@ -137,7 +140,9 @@ def notice_to_content(notice):
             'receiver_name':receiver.username,
             'group_id': notice.group_id,
             'group_name':group.groupname,
-            'send_time': notice.send_time,
+            'document_id': "",
+            'document_title':"",
+            'datetime': notice.send_time,
             'content': notice.content,
             'type': notice.type
         }
