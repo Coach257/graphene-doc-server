@@ -265,13 +265,18 @@ def invite_user():
     group_id=request.form['group_id']
     group=Group.query.filter(Group.id==group_id).first()
     user_id=request.form['user_id']
-    sender_id=User.query.filter(User.username==request.form['leader_username']).first().id
-    sender=User.query.filter(User.id==sender_id).first()
+    sender=User.query.filter(User.username==request.form['leader_username']).first()
+    notice=Notice.query.filter(and_(and_(Notice.group_id==group_id,Notice.sender_id==sender.id),Notice.receiver_id==user_id)).first()
+    if(notice):
+        response={
+            'message':'success'
+        }
+        return jsonify(response)
     id=get_newid()
     now=datetime.datetime.now()
     send_time=now.strftime('%Y-%m-%d')
     content=sender.username+"邀请你加入团队("+group.groupname+")"
-    new_notice=Notice(id=id,sender_id=sender_id,receiver_id=user_id,document_id=0,
+    new_notice=Notice(id=id,sender_id=sender.id,receiver_id=user_id,document_id=0,
         group_id=group_id,send_time=now,content=content,type=2
     )
     db.session.add(new_notice)
