@@ -148,7 +148,7 @@ def groupiscreatedbyme():
         return sendmsg('yes')
     return sendmsg('no')
 
-@app.route('/api/search_group/',methods['POST'])
+@app.route('/api/search_group/',methods=['POST'])
 def search_group():
     user=User.query.filter(User.username==request.form['username']).first()
     keyword=request.form['keyword']
