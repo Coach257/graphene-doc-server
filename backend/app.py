@@ -300,23 +300,24 @@ def apply_in_group():
 
 # 作为团队leader，收到了来自用户的申请，我选择通过他的申请，加人，给申请人发一条消息
 # 在我的group中添加用户，这里的用户是前端判断好的不在该group中的user
-@app.route('/api/addgroupmember/',methods=['POST'])
+@app.route('/api/accept_application_addgroupmember/',methods=['POST'])
 def accept_application_addgroupmember():
     userid=request.form['userid']
     user=User.query.filter(User.id==userid).first()
     groupid=request.form['groupid']
     group=Group.query.filter(Group.id==groupid).first()
+    leader=User.query.filter(User.id==group.leaderid).first()
     id=get_newid()
     newGroupMember=GroupMember(id=id,user_id=userid,group_id=groupid)
     db.session.add(newGroupMember)
     db.session.commit()
 
     # 发送消息
-    id=get_newid()
+    id=id+1
     now=datetime.datetime.now()
     send_time=now.strftime('%Y-%m-%d')
-    content=send_time+", "+user.username+"通过了你的申请，你已加入团队("+group.groupname+")"
-    new_notice=Notice(id=id,sender_id=userid,receiver_id=group.leaderid,document_id=0,
+    content=send_time+", "+leader.username+"通过了你的申请，你已加入团队("+group.groupname+")"
+    new_notice=Notice(id=id,sender_id=leader.id,receiver_id=user.id,document_id=0,
         group_id=groupid,send_time=now,content=content,type=7
     )
     db.session.add(new_notice)
@@ -330,6 +331,31 @@ def accept_application_addgroupmember():
             favorited=0,type=1,modified_time=0)
         db.session.add(newDU)
         db.session.commit()
+    response={
+        'message':'success'
+    }
+    return jsonify(response)
+
+# 作为团队leader，收到了来自用户的申请，我选择拒绝他的申请，不加人，给申请人发一条消息
+@app.route('/api/refuse_application_addgroupmember/',methods=['POST'])
+def refuse_application_addgroupmember():
+    userid=request.form['userid']
+    user=User.query.filter(User.id==userid).first()
+    groupid=request.form['groupid']
+    group=Group.query.filter(Group.id==groupid).first()
+    leader=User.query.filter(User.id==group.leaderid).first()
+
+    # 发送消息
+    id=id+1
+    now=datetime.datetime.now()
+    send_time=now.strftime('%Y-%m-%d')
+    content=send_time+", "+leader.username+"拒绝了你的申请，加入团队("+group.groupname+")失败"
+    new_notice=Notice(id=id,sender_id=leader.id,receiver_id=user.id,document_id=0,
+        group_id=groupid,send_time=now,content=content,type=8
+    )
+    db.session.add(new_notice)
+    db.session.commit()
+    
     response={
         'message':'success'
     }
