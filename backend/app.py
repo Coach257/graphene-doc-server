@@ -171,6 +171,101 @@ def addgroupmember():
     }
     return jsonify(response)
 
+<<<<<<< Updated upstream
+=======
+# 显示该团队下的成员
+# tested
+@app.route('/api/get_user_bygroup/',methods=['POST'])
+def get_user_bygroup():
+    all_group_user=get_user_ingroup(request.form['groupid'])
+    res=[]
+    for user in all_group_user:
+        content={
+            'id':user.id,
+            'username':user.username,
+            'email':user.email
+        }
+        res.append(content)
+    return jsonify(res)
+
+# 删除团队成员
+@app.route('/api/delete_user/',methods=['POST'])
+def delete_user():
+    groupid=request.form['groupid']
+    group=Group.query.filter(Group.id==groupid).first()
+    userid=request.form['userid']
+    db.session.query(GroupMember).filter(and_(GroupMember.user_id==request.form['userid'],GroupMember.group_id==request.form['groupid'])).delete()
+    db.session.commit()
+
+    # 发送消息
+    sender_id=request.form['leaderid']
+    sender=User.query.filter(User.id==sender_id).first()
+    id=get_newid()
+    now=datetime.datetime.now()
+    send_time=now.strftime('%Y-%m-%d')
+    content=sender.username+"将你踢出了团队("+group.groupname+")"
+    new_notice=Notice(id=id,sender_id=sender_id,receiver_id=userid,document_id=0,
+        group_id=groupid,send_time=now,content=content,type=0
+    )
+    db.session.add(new_notice)
+    db.session.commit()
+
+    # 删除成员对应文档权限
+    all_document=db.session.query(Document).filter(Document.group_id==groupid).all()
+    for document in all_document:
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==userid)).delete()
+        db.session.commit()
+    return jsonify({'message':'success'})
+
+# 团队成员主动退出团队
+@app.route('/api/quit_group/',methods=['POST'])
+def quit_group():
+    groupid=request.form['groupid']
+    group=Group.query.filter(Group.id==groupid).first()
+    userid=request.form['userid']
+    user=User.query.filter(User.id==userid).first()
+    db.session.query(GroupMember).filter(and_(GroupMember.user_id==request.form['userid'],GroupMember.group_id==request.form['groupid'])).delete()
+    db.session.commit()
+
+    # 发送消息
+    receiver_id=group.leader_id
+    receiver=User.query.filter(User.id==receiver_id).first()
+    id=get_newid()
+    now=datetime.datetime.now()
+    send_time=now.strftime('%Y-%m-%d')
+    content=user.username+"退出了团队("+group.groupname+")"
+    new_notice=Notice(id=id,sender_id=userid,receiver_id=receiver_id,document_id=0,
+        group_id=groupid,send_time=now,content=content,type=9)
+    db.session.add(new_notice)
+    db.session.commit()
+
+    # 删除成员对应文档权限
+    all_document=db.session.query(Document).filter(Document.group_id==groupid).all()
+    for document in all_document:
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==userid)).delete()
+        db.session.commit()
+    return jsonify({'message':'success'})
+
+# 解散团队
+@app.route('/api/delete_group/',methods=['POST'])
+def delete_group():
+    groupid=request.form['groupid']
+    db.session.query(GroupMember).filter(GroupMember.group_id==request.form['groupid']).delete()
+    db.session.query(Group).filter(Group.id==request.form['groupid']).delete()
+    # 删除成员对应文档
+    # 删除团队文档
+    db.session.commit()
+    all_document=db.session.query(Document).filter(Document.group_id==groupid).all()
+
+    for document in all_document:
+        db.session.query(DocumentUser).filter(DocumentUser.document_id==document.id).delete()
+        
+        db.session.commit()
+    db.session.query(Document).filter(Document.group_id==groupid).delete()
+    db.session.commit()
+    return jsonify({'message':'success'})
+
+>>>>>>> Stashed changes
 ####################################
 ########## Document操作 ###############
 ####################################
@@ -195,7 +290,106 @@ def create_doc():
     }
     return jsonify(response)
 
+<<<<<<< Updated upstream
 #获取文档
+=======
+# 查看我拥有的文档(除团队文档外的文档)
+@app.route('/api/my_docs/',methods=['POST'])
+def my_docs():
+    user=User.query.filter(User.username==request.form['username']).first()
+    all_du=DocumentUser.query.filter(DocumentUser.user_id==user.id).all()
+    res=[]
+    for du in all_du:
+        doc=Document.query.filter(du.document_id==Document.id).first()
+        if doc.recycled == 0 and du.type != 1:
+            res.append(document_to_content(doc))
+    return jsonify(res)
+
+# 获取我创建的所有文档的信息
+@app.route('/api/my_created_docs/',methods=['POST'])
+def my_created_docs():
+    user=User.query.filter(User.username==request.form['username']).first()
+    all_document=Document.query.filter(and_(Document.creator_id==user.id,Document.recycled==0)).all()
+    res=[]
+    for document in all_document:
+        if document.recycled == 0:
+            res.append(document_to_content(document))
+    return jsonify(res)
+
+@app.route('/api/my_deleted_docs/',methods=['POST'])
+def my_deleted_docs():
+    user=User.query.filter(User.username==request.form['username']).first()
+    all_document=Document.query.filter(and_(Document.creator_id==user.id,Document.recycled==1)).all()
+    res=[]
+    for document in all_document:
+        res.append(document_to_content(document))
+    return jsonify(res)
+
+# 传递权限信息
+@app.route('/api/tell_doc_right/',methods=['POST'])
+def tell_doc_right():
+    document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+    user=User.query.filter(User.username==request.form['username']).first()
+    DUlink=db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
+    if(DUlink==None):
+        response={
+            'watch_right':False,
+            'modify_right':False,
+            'share_right':False,
+            'discuss_right':False,
+            'others_modify_right':False,
+            'others_share_right':False,
+            'others_discuss_right':False,
+            'others_watch_right':False,
+            'doctype':-1,
+            'usertype':-1
+        }
+    elif user.id==document.creator_id:
+        if document.group_id!=0:
+            type=0
+        else:
+            type=1
+        response={
+            'watch_right':True,
+            'modify_right':True,
+            'share_right':True,
+            'discuss_right':True,
+            'others_modify_right':True,
+            'others_share_right':True,
+            'others_discuss_right':True,
+            'others_watch_right':True,
+            'doctype':type,
+            'usertype':DUlink.type
+        }
+    else:
+        if document.group_id!=0:
+            type=0
+        else:
+            type=1
+
+        modify_right=toTF(document.modify_right)
+        share_right=toTF(document.share_right)
+        discuss_right=toTF(document.discuss_right)
+        
+        others_modify_right=toTF(document.others_modify_right)
+        others_share_right=toTF(document.others_share_right)
+        others_discuss_right=toTF(document.others_discuss_right)
+        response={
+            'watch_right':True,
+            'modify_right':modify_right,
+            'share_right':share_right,
+            'discuss_right':discuss_right,
+            'others_modify_right':others_modify_right,
+            'others_share_right':others_share_right,
+            'others_discuss_right':others_discuss_right,
+            'others_watch_right':True,
+            'doctype':type,
+            'usertype':DUlink.type
+        }
+    return jsonify(response)     
+
+# 获取文档
+>>>>>>> Stashed changes
 @app.route('/api/get_doccontent/', methods=['POST'])
 def get_doccontent():
     msg=''
