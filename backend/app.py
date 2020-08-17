@@ -419,6 +419,35 @@ def delete_user():
         db.session.commit()
     return jsonify({'message':'success'})
 
+# 团队成员主动退出团队
+@app.route('/api/quit_group/',methods=['POST'])
+def quit_group():
+    groupid=request.form['groupid']
+    group=Group.query.filter(Group.id==groupid).first()
+    userid=request.form['userid']
+    user=User.query.filter(User.id==userid).first()
+    db.session.query(GroupMember).filter(and_(GroupMember.user_id==request.form['userid'],GroupMember.group_id==request.form['groupid'])).delete()
+    db.session.commit()
+
+    # 发送消息
+    receiver_id=group.leader_id
+    receiver=User.query.filter(User.id==receiver_id).first()
+    id=get_newid()
+    now=datetime.datetime.now()
+    send_time=now.strftime('%Y-%m-%d')
+    content=user.username+"退出了团队("+group.groupname+")"
+    new_notice=Notice(id=id,sender_id=userid,receiver_id=receiver_id,document_id=0,
+        group_id=groupid,send_time=now,content=content,type=9)
+    db.session.add(new_notice)
+    db.session.commit()
+
+    # 删除成员对应文档权限
+    all_document=db.session.query(Document).filter(Document.group_id==groupid).all()
+    for document in all_document:
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==userid)).delete()
+        db.session.commit()
+    return jsonify({'message':'success'})
+
 # 解散团队
 @app.route('/api/delete_group/',methods=['POST'])
 def delete_group():
@@ -550,7 +579,7 @@ def create_group_doc():
 @app.route('/api/my_docs/',methods=['POST'])
 def my_docs():
     user=User.query.filter(User.username==request.form['username']).first()
-    all_du=DocumentUser.query.filter(and_(DocumentUser.user_id==user.id,DocumentUser.recycled==0)).all()
+    all_du=DocumentUser.query.filter(DocumentUser.user_id==user.id).all()
     res=[]
     for du in all_du:
         doc=Document.query.filter(du.document_id==Document.id).first()
