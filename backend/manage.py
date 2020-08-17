@@ -130,7 +130,7 @@ def notice_to_content(notice):
             'content': notice.content,
             'type': notice.type
         }
-    elif(type==0 or type==1 or type==2 or type==5 or type==7 or type==8): # 关于小组
+    elif(type==0 or type==1 or type==2 or type==5 or type==7 or type==8 or type==6): # 关于小组
         group=Group.query.filter(Group.id==notice.group_id).first()
         content = {
             'id': notice.id,

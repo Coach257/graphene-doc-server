@@ -291,7 +291,7 @@ def invite_user():
 def apply_in_group():
     user=User.query.filter(User.username==request.form['username']).first()
     group=Group.query.filter(Group.groupname==request.form['groupname']).first()
-    notice=Notice.query.filter(and_(and_(Notice.group_id==group.id,Notice.sender_id==user.id),and_(Notice.type==6,Notice.receiver_id==group.leaderid)))
+    notice=Notice.query.filter(and_(and_(Notice.group_id==group.id,Notice.sender_id==user.id),and_(Notice.type==6,Notice.receiver_id==group.leaderid))).first()
     if(notice):
         response={
             'message':'success'
@@ -336,7 +336,7 @@ def accept_application_addgroupmember():
     )
     db.session.add(new_notice)
     db.session.commit()
-
+    del_notice(request.form['id'])
     all_document=db.session.query(Document).filter(Document.group_id==groupid).all()
     for document in all_document:
         id=get_newid()
@@ -1187,12 +1187,11 @@ def view_confirm_notice():
 @app.route('/api/view_confirm_apply_notice/',methods=['POST'])
 def view_confirm_apply_notice():
     receiver=User.query.filter(User.username==request.form['receiver_username']).first()
-    all_notice=Notice.query.filter(Notice.receiver_id==receiver.id).all()
+    all_notice=Notice.query.filter(and_(Notice.receiver_id==receiver.id,Notice.type==6)).all()
     res=[]
     for notice in all_notice:
-        stat=notice.type
-        if(stat==6):
-            res.append(notice_to_content(notice))
+        res.append(notice_to_content(notice))
+    print(res)
     return jsonify(res)
 
 # 查看某用户的消息数量
