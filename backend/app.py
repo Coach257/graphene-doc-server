@@ -266,7 +266,7 @@ def invite_user():
     group=Group.query.filter(Group.id==group_id).first()
     user_id=request.form['user_id']
     sender=User.query.filter(User.username==request.form['leader_username']).first()
-    notice=Notice.query.filter(and_(and_(Notice.group_id==group_id,Notice.sender_id==sender.id),and_(Notice.type!=2,Notice.receiver_id==user_id))).first()
+    notice=Notice.query.filter(and_(and_(Notice.group_id==group_id,Notice.sender_id==sender.id),and_(Notice.type==2,Notice.receiver_id==user_id))).first()
     if(notice):
         response={
             'message':'success'
@@ -291,7 +291,7 @@ def invite_user():
 def apply_in_group():
     user=User.query.filter(User.username==request.form['username']).first()
     group=Group.query.filter(Group.groupname==request.form['groupname']).first()
-    notice=Notice.query.filter(and_(and_(Notice.group_id==group.id,Notice.sender_id==user.id),Notice.receiver_id==group.leaderid))
+    notice=Notice.query.filter(and_(and_(Notice.group_id==group.id,Notice.sender_id==user.id),and_(Notice.type==6,Notice.receiver_id==group.leaderid)))
     if(notice):
         response={
             'message':'success'
@@ -1178,7 +1178,7 @@ def view_confirm_notice():
 
 # 查看所有需要确认的消息(type=6) 需要有两个button，分别发出type=7、8的消息
 @app.route('/api/view_confirm_apply_notice/',methods=['POST'])
-def view_confirm_notice():
+def view_confirm_apply_notice():
     receiver=User.query.filter(User.username==request.form['receiver_username']).first()
     all_notice=Notice.query.filter(Notice.receiver_id==receiver.id).all()
     res=[]
