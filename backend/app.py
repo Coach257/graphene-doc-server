@@ -264,6 +264,25 @@ def invite_user():
     }
     return jsonify(response)
 
+# 团队外用户申请加入某团队
+@app.route('/api/apply_in_group/',methods=['POST'])
+def apply_in_group():
+    user=User.query.filter(User.username==request.form['username']).first()
+    group=Group.query.filter(Group.groupname==request.form['groupname']).first()
+    id=get_newid()
+    now=datetime.datetime.now()
+    send_time=now.strftime('%Y-%m-%d')
+    content=send_time+", "+user.username+"申请加入团队("+group.groupname+")"
+    new_notice=Notice(id=id,sender_id=user.id,receiver_id=group.leaderid,document_id=0,
+        group_id=group.id,send_time=now,content=content,type=6
+    )
+    db.session.add(new_notice)
+    db.session.commit()
+    response={
+        'message':'success'
+    }
+    return jsonify(response)
+
 # 显示该团队下的成员
 # tested
 @app.route('/api/get_user_bygroup/',methods=['POST'])

@@ -109,3 +109,6 @@ class Notice(db.Model):
 # 3:我创建的文档被评论 评论者传给创建者 document_id、content 发送 "你的文档xxx被a评论"
 # 4:收到了来自他人分享来的文件，传document_id、content 由sender发送 "你收到了来自a分享的文档xxx"
 # 5:我被邀请加入某个团队，我选择拒绝加入团队 传group_id、content 发送给sender "a拒绝了你的邀请"
+# 6:我主动申请加入某个团队(先模糊检索团队名)，传group_id、content，发给团队leader "a申请加入团队xxx"
+# 7:团队leader接受了对方的加入团队申请，传给申请人group_id、content 发送给申请人 "团队xxx接受了你的邀请"
+# 8:团队leader拒绝了对方的加入团队申请，传给申请人group_id、content 发送给申请人 "团队xxx拒绝了你的邀请"
