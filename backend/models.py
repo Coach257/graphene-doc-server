@@ -102,6 +102,7 @@ class Notice(db.Model):
     send_time=db.Column(db.DateTime)
     content=db.Column(db.TEXT)
     type=db.Column(db.Integer)
+    
 # type:
 # 0:我被踢出团队 传content、group_id "a将你踢出了团队xxx"
 # 1:我被邀请加入某个团队，我选择接受加入团队 传group_id、content 发送给sender "a通过了你的邀请"
@@ -112,3 +113,11 @@ class Notice(db.Model):
 # 6:我主动申请加入某个团队(先模糊检索团队名)，传group_id、content，发给团队leader "a申请加入团队xxx"
 # 7:团队leader接受了对方的加入团队申请，传给申请人group_id、content 发送给申请人 "团队xxx接受了你的邀请"
 # 8:团队leader拒绝了对方的加入团队申请，传给申请人group_id、content 发送给申请人 "团队xxx拒绝了你的邀请"
+
+class Message(db.Model):
+    __tablename__='Message'
+    id=db.Column(db.Integer,primary_key=True)
+    sender_id=db.Column(db.Integer)
+    receiver_id=db.Column(db.Integer)
+    send_time=db.Column(db.DateTime)
+    content=db.Column(db.TEXT)
