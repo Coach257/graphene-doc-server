@@ -1196,11 +1196,17 @@ def view_confirm_apply_notice():
     return jsonify(res)
 
 # 查看某用户的消息数量
-@app.route('/api/num_of_notice/',methos=['POST'])
+@app.route('/api/num_of_notice/',methods=['POST'])
 def num_of_notice():
     receiver=User.query.filter(User.username==request.form['receiver_username']).first()
-    all_notice_num=Notice.query.filter(Notice.receiver_id==receiver.id).scalar()
-    return jsonify(all_notice_num)
+    all_notice=Notice.query.filter(Notice.receiver_id==receiver.id).all()
+    cnt=0
+    for notice in all_notice:
+         cnt+=1
+    content={
+        'notice_cnt':cnt
+    }
+    return jsonify(content)
 
 ####################################
 ########## 私信 操作 ###############
