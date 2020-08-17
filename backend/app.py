@@ -253,7 +253,8 @@ def queryuser():
             content={
                 'id':user.id,
                 'username':user.username,
-                'email':user.email
+                'email':user.email,
+                'description':user.description
             }
             res.append(content)
     return jsonify(res)
