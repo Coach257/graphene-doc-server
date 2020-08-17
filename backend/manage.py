@@ -180,3 +180,12 @@ def created_info(document,user):
 def del_notice(id):
     db.session.query(Notice).filter(Notice.id==id).delete()
     db.session.commit()
+
+def msg_to_content(sender,receiver,msg):
+    content={
+        'sender_name':sender.username,
+        'receiver_name':receiver.username,
+        'content':msg.content,
+        'send_time':msg.send_time
+    }
+    return content

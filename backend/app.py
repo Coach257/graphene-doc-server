@@ -1124,6 +1124,7 @@ def view_non_confirm_notice():
 
 
 # 查看所有需要确认的消息(type=2) 需要有两个button，分别发出type=1、5的消息
+# 查看所有需要确认的消息(type=6) 需要有两个button，分别发出type=7、8的消息
 @app.route('/api/view_confirm_notice/',methods=['POST'])
 def view_confirm_notice():
     receiver=User.query.filter(User.username==request.form['receiver_username']).first()
@@ -1133,6 +1134,57 @@ def view_confirm_notice():
         stat=notice.type
         if(stat==2):
             res.append(notice_to_content(notice))
+    return jsonify(res)
+
+####################################
+########## 私信 操作 ###############
+####################################
+
+@app.route('/api/send_msg_to_sb/',methods=['POST'])
+def send_msg_to_sb():
+    receiver=User.query.filter(User.username==request.form['receiver_username']).first()
+    sender=User.query.filter(User.username==request.form['sender_username']).first()
+    id=get_newid()
+    now=datetime.datetime.now()
+    content=request.form['content']
+    new_msg=Message(id=id,sender_id=sender.id,receiver_id=receiver.id,send_time=now,content=content)
+    db.session.add(new_msg)
+    db.session.commit()
+    response={
+        'receiver_id':receiver.id,
+        'receiver_name':receiver.username,
+        'sender_id':sender.id,
+        'sender_name':sender.username,
+        'send_time':now,
+        'content':content
+    }
+    return jsonify(response)
+
+@app.route('/api/who_send_msg/',methods=['POST'])
+def who_send_msg():
+    receiver=User.query.filter(User.username==request.form['receiver_username']).first()
+    all_my_msg=Message.query.filter(Message.receiver_id==receiver.id).all()
+    res=[]
+    for msg in all_my_msg:
+        sender=User.query.filter(msg.sender_id==User.id).first()
+        res.append(msg_to_content(sender,receiver,msg))
+    return jsonify(res)
+
+@app.route('api/our_msg/',methods=['POST'])
+def our_msg():
+    receiver=User.query.filter(User.username==request.form['receiver_username']).first()
+    sender=User.query.filter(request.form['sender_username']==User.username).first()
+    all_our_msg=Message.query.filter(or_(and_(Message.receiver_id==receiver.id,Message.sender_id==sender.id),
+        and_(Message.receiver_id==sender.id,Message.sender_id==receiver.id))).order_by(Message.send_time).all()
+    res=[]
+    for msg in all_our_msg:
+        content={
+            'a_name':sender.username,
+            'b_name':receiver.username,
+            'content':msg.content,
+            'send_time':msg.send_time
+        }
+        res.append(content)
     return jsonify(res)
 
 if __name__ == '__main__':
