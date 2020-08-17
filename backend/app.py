@@ -879,9 +879,13 @@ def my_favor_doc():
 # 修改文档基本信息
 @app.route('/api/modify_doc_basic/',methods=['POST'])
 def modify_doc_basic():
-    db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"title":request.form['title']})
-    db.session.commit()
-    return sendmsg("success")
+    document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+    user = User.query.filter(User.username==request.form['username']).first()
+    if(user.id == document.creator_id):
+        db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"title":request.form['title']})
+        db.session.commit()
+        return sendmsg("success")
+    return sendmsg("fail")
 
 # 文档删除到回收站中
 @app.route('/api/recycle_doc/', methods=['POST'])
