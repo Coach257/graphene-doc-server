@@ -982,6 +982,9 @@ def get_all_modified_time():
     for tmp in all_modified_time:
         user=User.query.filter(User.id==tmp.user_id).first()
         res.append(modifiedtime_to_content(tmp,user))
+    document=Document.query.filter(Document.id==request.form['DocumentID']).first()
+    user=User.query.filter(User.id==document.creator_id).first()
+    res.append(created_info(document,user))
     return jsonify(res)
 
 ####################################

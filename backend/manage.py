@@ -147,7 +147,8 @@ def modifiedtime_to_content(du,user):
     content = {
         'document_id': du.document_id,
         'username':user.username,
-        'datetime':du.modified_time
+        'datetime':du.modified_time,
+        'content':'修改了文档'
     }
     return content
 
@@ -161,3 +162,12 @@ def toTF(num):
     if num==1:
         return True
     return False
+
+def created_info(document,user):
+    content = {
+        'document_id':document.id,
+        'username':user.username,
+        'datetime':document.created_time,
+        'content':'创建了文档'
+    }
+    return content
