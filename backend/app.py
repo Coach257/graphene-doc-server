@@ -134,7 +134,8 @@ def mygroup():
     res=[]
     for groupmember in all_groupmember:
         group=Group.query.filter(Group.id==groupmember.group_id).first()
-        res.append(group_to_content(group))
+        if(group.leaderid!=user.id):
+            res.append(group_to_content(group))
     return jsonify(res)
 
 # 判断这个group是不是当前登录用户所创建的group
@@ -146,6 +147,19 @@ def groupiscreatedbyme():
     if(res):
         return sendmsg('yes')
     return sendmsg('no')
+
+@app.route('/api/search_group/',methods['POST'])
+def search_group():
+    user=User.query.filter(User.username==request.form['username']).first()
+    keyword=request.form['keyword']
+    res=[]
+    all_group=Group.query.filter(Group.groupname.like('%{keyword}%'.format(keyword=keyword))).all()
+    for group in all_group:
+        gm=GroupMember.query.filter(and_(GroupMember.group_id==group.id,GroupMember.user_id==user.id)).first()
+        if(gm):
+           continue
+        res.append(group_to_content(group))
+    return jsonify(res)
 
 @app.route('/api/group_created_byme/',methods=['POST'])
 def group_created_byme():
