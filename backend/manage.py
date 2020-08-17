@@ -171,3 +171,7 @@ def created_info(document,user):
         'content':'创建了文档'
     }
     return content
+
+def del_notice(id):
+    db.session.query(Notice).filter(Notice.id==id).delete()
+    db.session.commit()

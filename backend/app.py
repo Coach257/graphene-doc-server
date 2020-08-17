@@ -203,6 +203,7 @@ def addgroupmember():
             favorited=0,type=1,modified_time=0)
         db.session.add(newDU)
         db.session.commit()
+    del_notice(request.form['id'])
     response={
         'message':'success'
     }
@@ -225,8 +226,9 @@ def refuse_groupmember():
         group_id=groupid,send_time=now,content=content,type=5
     )
     db.session.add(new_notice)
+    del_notice(request.form['id'])
     db.session.commit()
-
+    
     response={
         'message':'success'
     }
@@ -344,7 +346,7 @@ def refuse_application_addgroupmember():
     groupid=request.form['groupid']
     group=Group.query.filter(Group.id==groupid).first()
     leader=User.query.filter(User.id==group.leaderid).first()
-
+    id=get_newid()
     # 发送消息
     id=id+1
     now=datetime.datetime.now()
@@ -355,7 +357,7 @@ def refuse_application_addgroupmember():
     )
     db.session.add(new_notice)
     db.session.commit()
-    
+    del_notice(request.form['id'])
     response={
         'message':'success'
     }
@@ -539,8 +541,8 @@ def my_docs():
     all_du=DocumentUser.query.filter(and_(DocumentUser.user_id==user.id,DocumentUser.recycled==0)).all()
     res=[]
     for du in all_du:
-        if du.recycled == 0 and du.type != 1:
-            doc=Document.query.filter(du.document_id==Document.id).first()
+        doc=Document.query.filter(du.document_id==Document.id).first()
+        if doc.recycled == 0 and du.type != 1:
             res.append(document_to_content(doc))
     return jsonify(res)
 
@@ -1102,8 +1104,7 @@ def get_all_notice():
 @app.route('/api/del_new_notice/',methods=['POST'])
 def del_new_notice():
     new_notice_id=request.form['new_notice_id']
-    db.session.query(Notice).filter(Notice.id==new_notice_id).delete()
-    db.session.commit()
+    del_notice(new_notice_id)
     response={
         'message':'success'
     }
