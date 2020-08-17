@@ -157,7 +157,7 @@ def group_created_byme():
     return jsonify(res)
 
 
-# 作为团队的管理者，添加成员
+# 作为团队的管理者，添加成员，在被接受端选择接受邀请时加人，给leader发一条消息
 # 在我的group中添加用户，这里的用户是前端判断好的不在该group中的user
 @app.route('/api/addgroupmember/',methods=['POST'])
 def addgroupmember():
@@ -242,7 +242,7 @@ def queryuser():
             res.append(content)
     return jsonify(res)
 
-# 邀请加入团队(发送邀请信息)
+# 团队的leader邀请加入团队(发送邀请信息)
 @app.route('/api/invite_user/',methods=['POST'])
 def invite_user():
     group_id=request.form['group_id']
@@ -278,6 +278,44 @@ def apply_in_group():
     )
     db.session.add(new_notice)
     db.session.commit()
+    response={
+        'message':'success'
+    }
+    return jsonify(response)
+
+
+# 作为团队leader，收到了来自用户的申请，我选择通过他的申请，加人，给申请人发一条消息
+# 在我的group中添加用户，这里的用户是前端判断好的不在该group中的user
+@app.route('/api/addgroupmember/',methods=['POST'])
+def accept_application_addgroupmember():
+    userid=request.form['userid']
+    user=User.query.filter(User.id==userid).first()
+    groupid=request.form['groupid']
+    group=Group.query.filter(Group.id==groupid).first()
+    id=get_newid()
+    newGroupMember=GroupMember(id=id,user_id=userid,group_id=groupid)
+    db.session.add(newGroupMember)
+    db.session.commit()
+
+    # 发送消息
+    id=get_newid()
+    now=datetime.datetime.now()
+    send_time=now.strftime('%Y-%m-%d')
+    content=send_time+", "+user.username+"通过了你的申请，你已加入团队("+group.groupname+")"
+    new_notice=Notice(id=id,sender_id=userid,receiver_id=group.leaderid,document_id=0,
+        group_id=groupid,send_time=now,content=content,type=7
+    )
+    db.session.add(new_notice)
+    db.session.commit()
+
+    all_document=db.session.query(Document).filter(Document.group_id==groupid).all()
+    for document in all_document:
+        id=get_newid()
+        newDU=DocumentUser(id=id,document_id=document.id,
+            user_id=userid,last_watch=0,
+            favorited=0,type=1)
+        db.session.add(newDU)
+        db.session.commit()
     response={
         'message':'success'
     }
