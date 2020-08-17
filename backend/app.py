@@ -2,7 +2,7 @@
 from functools import wraps
 from flask import Flask, request, render_template, redirect, url_for, flash, session,jsonify
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import and_, or_,not_
+from sqlalchemy import and_, or_,not_,func
 from models import *
 from manage import *
 from flask_cors import CORS
@@ -1194,6 +1194,13 @@ def view_confirm_apply_notice():
         if(stat==6):
             res.append(notice_to_content(notice))
     return jsonify(res)
+
+# 查看某用户的消息数量
+@app.route('/api/num_of_notice/',methos=['POST'])
+def num_of_notice():
+    receiver=User.query.filter(User.username==request.form['receiver_username']).first()
+    all_notice_num=Notice.query.filter(Notice.receiver_id==receiver.id).scalar()
+    return jsonify(all_notice_num)
 
 ####################################
 ########## 私信 操作 ###############
