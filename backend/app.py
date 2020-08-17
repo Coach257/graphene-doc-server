@@ -1170,7 +1170,7 @@ def who_send_msg():
         res.append(msg_to_content(sender,receiver,msg))
     return jsonify(res)
 
-@app.route('api/our_msg/',methods=['POST'])
+@app.route('/api/our_msg/',methods=['POST'])
 def our_msg():
     receiver=User.query.filter(User.username==request.form['receiver_username']).first()
     sender=User.query.filter(request.form['sender_username']==User.username).first()
