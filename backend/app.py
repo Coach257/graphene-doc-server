@@ -1075,7 +1075,7 @@ def get_all_comment():
 @app.route('/api/get_all_modified_time/',methods=['POST'])
 def get_all_modified_time():
     res=[]
-    all_modified_time=DocumentUser.query.filter(and_(DocumentUser.id==request.form['DocumentID'],DocumentUser.modified_time!=0)).order_by(-DocumentUser.modified_time).all()
+    all_modified_time=db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==request.form['DocumentID'],DocumentUser.modified_time!=0)).order_by(-DocumentUser.modified_time)
     for tmp in all_modified_time:
         user=User.query.filter(User.id==tmp.user_id).first()
         res.append(modifiedtime_to_content(tmp,user))
