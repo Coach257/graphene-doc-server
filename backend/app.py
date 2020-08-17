@@ -266,7 +266,7 @@ def invite_user():
     group=Group.query.filter(Group.id==group_id).first()
     user_id=request.form['user_id']
     sender=User.query.filter(User.username==request.form['leader_username']).first()
-    notice=Notice.query.filter(and_(and_(Notice.group_id==group_id,Notice.sender_id==sender.id),Notice.receiver_id==user_id)).first()
+    notice=Notice.query.filter(and_(and_(Notice.group_id==group_id,Notice.sender_id==sender.id),and_(Notice.type!=2,Notice.receiver_id==user_id))).first()
     if(notice):
         response={
             'message':'success'
@@ -291,6 +291,12 @@ def invite_user():
 def apply_in_group():
     user=User.query.filter(User.username==request.form['username']).first()
     group=Group.query.filter(Group.groupname==request.form['groupname']).first()
+    notice=Notice.query.filter(and_(and_(Notice.group_id==group.id,Notice.sender_id==user.id),Notice.receiver_id==group.leaderid))
+    if(notice):
+        response={
+            'message':'success'
+        }
+        return jsonify(response)
     id=get_newid()
     now=datetime.datetime.now()
     send_time=now.strftime('%Y-%m-%d')
@@ -390,7 +396,7 @@ def delete_user():
     groupid=request.form['groupid']
     group=Group.query.filter(Group.id==groupid).first()
     userid=request.form['userid']
-    db.session.query(GroupMember).filter(and_(GroupMember.user_id==request.form['userid'],GroupMember.group_id==request.form['groupid'])).delete()
+    db.session.query(GroupMember).filter(and_(GroupMember.user_id==userid,GroupMember.group_id==groupid)).delete()
     db.session.commit()
 
     # 发送消息
@@ -1130,7 +1136,6 @@ def view_non_confirm_notice():
 
 
 # 查看所有需要确认的消息(type=2) 需要有两个button，分别发出type=1、5的消息
-# 查看所有需要确认的消息(type=6) 需要有两个button，分别发出type=7、8的消息
 @app.route('/api/view_confirm_notice/',methods=['POST'])
 def view_confirm_notice():
     receiver=User.query.filter(User.username==request.form['receiver_username']).first()
@@ -1139,6 +1144,18 @@ def view_confirm_notice():
     for notice in all_notice:
         stat=notice.type
         if(stat==2):
+            res.append(notice_to_content(notice))
+    return jsonify(res)
+
+# 查看所有需要确认的消息(type=6) 需要有两个button，分别发出type=7、8的消息
+@app.route('/api/view_confirm_apply_notice/',methods=['POST'])
+def view_confirm_notice():
+    receiver=User.query.filter(User.username==request.form['receiver_username']).first()
+    all_notice=Notice.query.filter(Notice.receiver_id==receiver.id).all()
+    res=[]
+    for notice in all_notice:
+        stat=notice.type
+        if(stat==6):
             res.append(notice_to_content(notice))
     return jsonify(res)
 
