@@ -624,7 +624,8 @@ def tell_doc_right():
             'others_discuss_right':False,
             'others_watch_right':False,
             'doctype':-1,
-            'usertype':-1
+            'usertype':-1,
+            'isleader':-1
         }
     elif user.id==document.creator_id:
         if document.group_id!=0:
@@ -641,7 +642,8 @@ def tell_doc_right():
             'others_discuss_right':True,
             'others_watch_right':True,
             'doctype':type,
-            'usertype':DUlink.type
+            'usertype':DUlink.type,
+            'isleader':1
         }
     else:
         if document.group_id!=0:
@@ -666,7 +668,8 @@ def tell_doc_right():
             'others_discuss_right':others_discuss_right,
             'others_watch_right':True,
             'doctype':type,
-            'usertype':DUlink.type
+            'usertype':DUlink.type,
+            'isleader':0
         }
     return jsonify(response)     
 
