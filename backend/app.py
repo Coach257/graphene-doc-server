@@ -200,7 +200,7 @@ def addgroupmember():
         id=get_newid()
         newDU=DocumentUser(id=id,document_id=document.id,
             user_id=userid,last_watch=0,
-            favorited=0,type=1)
+            favorited=0,type=1,modified_time=0)
         db.session.add(newDU)
         db.session.commit()
     response={
@@ -327,7 +327,7 @@ def accept_application_addgroupmember():
         id=get_newid()
         newDU=DocumentUser(id=id,document_id=document.id,
             user_id=userid,last_watch=0,
-            favorited=0,type=1)
+            favorited=0,type=1,modified_time=0)
         db.session.add(newDU)
         db.session.commit()
     response={
@@ -704,7 +704,7 @@ def personal_share_to():
         id=get_newid()
         newDU=DocumentUser(id=id,document_id=document.id,
             user_id=target_user.id,last_watch=0,
-            favorited=0,type=0)
+            favorited=0,type=0,modified_time=0)
         
         # 发送消息
         id=get_newid()
@@ -734,7 +734,7 @@ def group_doc_share_to():
         id=get_newid()
         newDU=DocumentUser(id=id,document_id=document.id,
             user_id=target_user.id,last_watch=0,
-            favorited=0,type=2)
+            favorited=0,type=2,modified_time=0)
         
         # 发送消息
         id=get_newid()
