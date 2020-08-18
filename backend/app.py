@@ -888,13 +888,25 @@ def modify_doc_basic():
         return sendmsg("success")
     return sendmsg("fail")
 
-# 文档创建者将文档设置为私密文档（在点击该按钮时，显示提示信息，其他协作者将看不到该文档）
+# 个人文档创建者将文档设置为私密文档（在点击该按钮时，显示提示信息，其他协作者将看不到该文档）
 @app.route('/api/set_document_private/',methods=['POST'])
 def set_document_private():
     document = Document.query.filter(Document.id == request.form['DocumentID']).first()
     user = User.query.filter(User.username==request.form['username']).first()
     if(user.id == document.creator_id):
         db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id!=user.id)).delete()
+        db.session.commit()
+        return sendmsg("success")
+    return sendmsg("fail")
+
+# 团队中的文档，文档创建者将其设置为私密文档（组内将删除该团队文档，转为该创建者的个人文档）
+@app.route('/api/group_doc_to_personal/',methods=['POST'])
+def group_doc_to_personal():
+    document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+    user = User.query.filter(User.username==request.form['username']).first()
+    if(user.id == document.creator_id):
+        DocumentUser.query.filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id!=user.id)).delete()
+        Document.query.filter(Document.id==document.id).update({"group_id":0})
         db.session.commit()
         return sendmsg("success")
     return sendmsg("fail")
