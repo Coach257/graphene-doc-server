@@ -626,7 +626,7 @@ def tell_doc_right():
             'others_watch_right':False,
             'doctype':-1,
             'usertype':-1,
-            'isleader':-1
+            'isleader':False
         }
     elif user.id==document.creator_id:
         if document.group_id!=0:
@@ -644,7 +644,7 @@ def tell_doc_right():
             'others_watch_right':True,
             'doctype':type,
             'usertype':DUlink.type,
-            'isleader':1
+            'isleader':True
         }
     else:
         if document.group_id!=0:
@@ -670,7 +670,7 @@ def tell_doc_right():
             'others_watch_right':True,
             'doctype':type,
             'usertype':DUlink.type,
-            'isleader':0
+            'isleader':False
         }
     return jsonify(response)     
 
