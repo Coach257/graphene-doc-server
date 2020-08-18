@@ -1194,7 +1194,7 @@ def view_non_confirm_notice():
     res=[]
     for notice in all_notice:
         stat=notice.type
-        if(stat==0 or stat==1 or stat==3 or stat==4 or stat==5 or stat==7 or stat==8):
+        if(stat==0 or stat==1 or stat==3 or stat==4 or stat==5 or stat==7 or stat==8 or stat==9):
             res.append(notice_to_content(notice))
     return jsonify(res)
 
