@@ -1057,13 +1057,13 @@ def modify_personal_doc_right():
     if request.method=='POST':
         document = Document.query.filter(Document.id == request.form['DocumentID']).first()
         user = User.query.filter(User.username==request.form['username']).first()
-        share_right=request.form['share_right']
+        others_share_right=request.form['others_share_right']
         # watch_right=request.form['watch_right']
-        modify_right=request.form['modify_right']
+        others_modify_right=request.form['others_modify_right']
         # delete_right=request.form['delete_right']
-        discuss_right=request.form['discuss_right']
-        db.session.query(Document).filter(Document.id==document.id).update({"share_right":share_right,
-            "modify_right":modify_right,"discuss_right":discuss_right})
+        others_discuss_right=request.form['others_discuss_right']
+        db.session.query(Document).filter(Document.id==document.id).update({"others_share_right":others_share_right,
+            "others_modify_right":others_modify_right,"others_discuss_right":others_discuss_right})
         msg="success"
         #     "watch_right":watch_right,"modify_right":modify_right,"delete_right":delete_right,"discuss_right":discuss_right})
         # db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"share_right":share_right,
