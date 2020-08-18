@@ -431,7 +431,7 @@ def quit_group():
     db.session.commit()
 
     # 发送消息
-    receiver_id=group.leader_id
+    receiver_id=group.leaderid
     receiver=User.query.filter(User.id==receiver_id).first()
     id=get_newid()
     now=datetime.datetime.now()
