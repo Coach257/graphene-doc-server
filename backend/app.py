@@ -908,6 +908,22 @@ def recycle_doc():
     }
     return jsonify(response)
 
+@app.route('/api/recycle_doc_2/', methods=['POST'])
+def recycle_doc_2():
+    msg=''
+    if request.method=='POST':
+        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+        if (document!=None) and (document.recycled==0):
+            msg='success'
+            db.session.query(Document).filter(Document.id==request.form['DocumentID']).update({"recycled":1})
+            db.session.commit()
+        else:
+            msg='fail'
+    response={
+        'message':msg
+    }
+    return jsonify(response)
+
 # 文件从回收站中删除变成二级删除状态
 @app.route('/api/del_doc/', methods=['POST'])
 def del_doc():
