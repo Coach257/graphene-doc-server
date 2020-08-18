@@ -126,6 +126,18 @@ def creategroup():
    db.session.commit()
    return sendmsg('success')
 
+
+# 修改团队信息
+@app.route('/api/modify_group_info/',methods=['POST'])
+def modify_group_info():
+    db.session.query(Group).filter(Group.id==request.form['groupid']).update({"groupname":request.form['groupname'],
+    "description":request.form['description']})
+    db.session.commit()
+    return sendmsg("success")
+
+
+
+
 # 显示我加入的group
 # tested
 @app.route('/api/mygroup/',methods=['POST'])
