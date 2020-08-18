@@ -674,6 +674,20 @@ def tell_doc_right():
         }
     return jsonify(response)     
 
+# 告知文档当前权限
+@app.route('/api/tell_current_doc_right/',methods=['POST'])
+def tell_current_doc_right():
+    document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+    response={
+        'modify_right':document.modify_right,
+        'share_right':document.share_right,
+        'discuss_right':document.discuss_right,
+        'others_modify_right':document.others_modify_right,
+        'others_share_right':document.others_share_right,
+        'others_discuss_right':document.others_discuss_right,
+    }
+    return jsonify(response)
+
 # 获取文档
 @app.route('/api/get_doccontent/', methods=['POST'])
 def get_doccontent():
