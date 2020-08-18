@@ -35,8 +35,9 @@ def home(path):
 def login():
     if request.method == 'POST':
         if valid_login(request.form['username'], request.form['password']):
-            session['username'] = request.form.get('username')
-            return sendmsg('success')
+            user = get_user_byusername(request.form['username'])
+            response=user_to_content(user)
+            return jsonify(response)
     return sendmsg('fail')
 
 # 获取当前登录用户
