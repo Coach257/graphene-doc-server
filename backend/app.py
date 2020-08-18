@@ -1158,7 +1158,7 @@ def del_new_notice():
     }
     return jsonify(response)
 
-# 查看所有不需要确认的消息(type=0,1,3,4,5,7,8)
+# 查看所有不需要确认的消息(type=0,1,3,4,5,7,8,9)
 @app.route('/api/view_non_confirm_notice/',methods=['POST'])
 def view_non_confirm_notice():
     receiver=User.query.filter(User.username==request.form['receiver_username']).first()
@@ -1175,12 +1175,11 @@ def view_non_confirm_notice():
 @app.route('/api/view_confirm_notice/',methods=['POST'])
 def view_confirm_notice():
     receiver=User.query.filter(User.username==request.form['receiver_username']).first()
-    all_notice=Notice.query.filter(Notice.receiver_id==receiver.id).all()
+    all_notice=Notice.query.filter(and_(Notice.receiver_id==receiver.id,Notice.type==2)).all()
     res=[]
     for notice in all_notice:
-        stat=notice.type
-        if(stat==2):
-            res.append(notice_to_content(notice))
+        res.append(notice_to_content(notice))
+    print(res)
     return jsonify(res)
 
 # 查看所有需要确认的消息(type=6) 需要有两个button，分别发出type=7、8的消息
@@ -1194,7 +1193,7 @@ def view_confirm_apply_notice():
     print(res)
     return jsonify(res)
 
-# 查看某用户的消息数量
+# 查看某用户的总未读消息数量
 @app.route('/api/num_of_notice/',methods=['POST'])
 def num_of_notice():
     receiver=User.query.filter(User.username==request.form['receiver_username']).first()
@@ -1204,6 +1203,32 @@ def num_of_notice():
          cnt+=1
     content={
         'notice_cnt':cnt
+    }
+    return jsonify(content)
+
+# 查看用户各种消息类型分别的数量
+@app.route('/api/all_sort_notice/',methods=['POST'])
+def all_sort_notice():
+    receiver=User.query.filter(User.username==request.form['receiver_username']).first()
+    all_notice=Notice.query.filter(Notice.receiver_id==receiver.id).all()
+    cnt_normal=0
+    cnt_type2=0
+    cnt_type6=0
+    cnt_total=0
+    for notice in all_notice:
+        stat=notice.type
+        if(stat==2):
+            cnt_type2+=1
+        elif(stat==6):
+            cnt_type6+=1
+        else:
+            cnt_normal+=1
+        cnt_total=cnt_type2+cnt_type6+cnt_normal
+    content={
+        'cnt_type2':cnt_type2,
+        'cnt_type6':cnt_type6,
+        'cnt_normal':cnt_normal,
+        'cnt_total':cnt_total
     }
     return jsonify(content)
 

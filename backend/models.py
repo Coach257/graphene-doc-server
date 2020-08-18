@@ -113,6 +113,7 @@ class Notice(db.Model):
 # 6:我主动申请加入某个团队(先模糊检索团队名)，传group_id、content，发给团队leader "a申请加入团队xxx"
 # 7:团队leader接受了对方的加入团队申请，传给申请人group_id、content 发送给申请人 "团队xxx接受了你的邀请"
 # 8:团队leader拒绝了对方的加入团队申请，传给申请人group_id、content 发送给申请人 "团队xxx拒绝了你的邀请"
+# 9:用户主动退出某一个团队，向团队管理者发送消息
 
 class Message(db.Model):
     __tablename__='Message'
