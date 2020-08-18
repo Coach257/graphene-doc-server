@@ -888,6 +888,17 @@ def modify_doc_basic():
         return sendmsg("success")
     return sendmsg("fail")
 
+# 文档创建者将文档设置为私密文档（在点击该按钮时，显示提示信息，其他协作者将看不到该文档）
+@app.route('/api/set_document_private/',methods=['POST'])
+def set_document_private():
+    document = Document.query.filter(Document.id == request.form['DocumentID']).first()
+    user = User.query.filter(User.username==request.form['username']).first()
+    if(user.id == document.creator_id):
+        db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id!=user.id)).delete()
+        db.session.commit()
+        return sendmsg("success")
+    return sendmsg("fail")
+
 # 文档删除到回收站中
 @app.route('/api/recycle_doc/', methods=['POST'])
 def recycle_doc():
