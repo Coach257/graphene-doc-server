@@ -1343,11 +1343,22 @@ def all_sort_notice():
 ####################################
 ########## 私信 操作 ###############
 ####################################
+@app.route('/api/sayhi/',methods=['POST'])
+def sayhi():
+    receiver=User.query.filter(User.username==request.form['receiver_username']).first()
+    sender=User.query.filter(User.username==request.form['sender_username']).first()
+    id=get_newid()
+    now=datetime.datetime.now()
+    new_msg=Message(id=id,sender_id=sender.id,receiver_id=receiver.id,send_time=now,content='hi')
+    db.session.add(new_msg)
+    db.session.commit()
+    response={
+        'message':'success'
+    }
+    return jsonify(response)
 
 @app.route('/api/send_msg_to_sb/',methods=['POST'])
 def send_msg_to_sb():
-    print(request.form['receiver_username'])
-    print(request.form['sender_username'])
     receiver=User.query.filter(User.username==request.form['receiver_username']).first()
     sender=User.query.filter(User.username==request.form['sender_username']).first()
     id=get_newid()
