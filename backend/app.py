@@ -1086,12 +1086,12 @@ def del_complete_doc():
 def show_recent_doc():
     res=[]
     user = get_user_byusername(request.form['username'])
-    all_documentuser=db.session.query(DocumentUser).filter(DocumentUser.user_id==user.id).order_by(-DocumentUser.last_watch).all()
+    all_documentuser=db.session.query(DocumentUser).filter(and_(DocumentUser.user_id==user.id,DocumentUser.last_watch!=0)).order_by(-DocumentUser.last_watch).all()
     for DU in all_documentuser:
         document=db.session.query(Document).filter(Document.id==DU.document_id).first()
         if(document==None):
             continue
-        if document.recycled == 0 :
+        if document.recycled == 0:
             res.append(document_to_content(document))
     return jsonify(res)
 
