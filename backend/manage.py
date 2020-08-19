@@ -183,6 +183,7 @@ def del_notice(id):
 
 def msg_to_content(sender,receiver,msg):
     content={
+        'id':msg.id,
         'sender_name':sender.username,
         'receiver_name':receiver.username,
         'content':msg.content,

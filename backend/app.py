@@ -1346,6 +1346,8 @@ def all_sort_notice():
 
 @app.route('/api/send_msg_to_sb/',methods=['POST'])
 def send_msg_to_sb():
+    print(request.form['receiver_username'])
+    print(request.form['sender_username'])
     receiver=User.query.filter(User.username==request.form['receiver_username']).first()
     sender=User.query.filter(User.username==request.form['sender_username']).first()
     id=get_newid()
@@ -1355,9 +1357,8 @@ def send_msg_to_sb():
     db.session.add(new_msg)
     db.session.commit()
     response={
-        'receiver_id':receiver.id,
+        'id':id,
         'receiver_name':receiver.username,
-        'sender_id':sender.id,
         'sender_name':sender.username,
         'send_time':now,
         'content':content
@@ -1382,13 +1383,35 @@ def our_msg():
         and_(Message.receiver_id==sender.id,Message.sender_id==receiver.id))).order_by(Message.send_time).all()
     res=[]
     for msg in all_our_msg:
+        sender=User.query.filter(User.id==msg.sender_id).first()
+        receiver=User.query.filter(User.id==msg.receiver_id).first()
         content={
-            'a_name':sender.username,
-            'b_name':receiver.username,
+            'id':msg.id,
+            'sender_name':sender.username,
+            'receiver_name':receiver.username,
             'content':msg.content,
             'send_time':msg.send_time
         }
         res.append(content)
+    return jsonify(res)
+
+@app.route('/api/send_msg_people/',methods=['POST'])
+def send_msg_people():
+    receiver=User.query.filter(User.username==request.form['receiver_username']).first()
+    all_my_msg=Message.query.filter(or_(Message.receiver_id==receiver.id,Message.sender_id==receiver.id)).all()
+    res=[]
+    userlist=[]
+    for msg in all_my_msg:
+        if(msg.sender_id==receiver.id):
+            sender=User.query.filter(msg.receiver_id==User.id).first()
+            if sender.id not in userlist:
+                userlist.append(sender.id)
+                res.append(msg_to_content(sender,receiver,msg))
+        else:
+            sender=User.query.filter(msg.sender_id==User.id).first()
+            if sender.id not in userlist:
+                userlist.append(sender.id)
+                res.append(msg_to_content(sender,receiver,msg))
     return jsonify(res)
 
 if __name__ == '__main__':
