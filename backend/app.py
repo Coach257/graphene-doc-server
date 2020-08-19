@@ -196,11 +196,6 @@ def addgroupmember():
     newGroupMember=GroupMember(id=id,user_id=userid,group_id=groupid)
     db.session.add(newGroupMember)
     db.session.commit()
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> zcy
 
     # 发送消息
     id=get_newid()
@@ -213,11 +208,7 @@ def addgroupmember():
     db.session.add(new_notice)
     db.session.commit()
 
-<<<<<<< HEAD
     all_document=db.session.query(Document).filter(Document.group_id==groupid).all()
-=======
-    all_document=db.session.query(Document).filter( ument.group_id==groupid).all()
->>>>>>> zcy
     for document in all_document:
         id=get_newid()
         newDU=DocumentUser(id=id,document_id=document.id,
@@ -251,10 +242,6 @@ def refuse_groupmember():
     del_notice(request.form['id'])
     db.session.commit()
     
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
->>>>>>> zcy
     response={
         'message':'success'
     }
@@ -754,52 +741,6 @@ def get_doccontent():
     }
     return jsonify(response)
 
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
-=======
-#获取文档标题
-@app.route('/api/get_doctitle/',methods=['POST'])
-def get_doctitle():
-    msg=''
-    mtitle=''
-    mtime=datetime.datetime.now()
-    if request.method == 'POST':
-        document = Document.query.filter(Document.id == request.form['DocumentID']).first()
-        user=User.query.filter(User.username==request.form['username']).first()
-        if (document==None) or (user==None):
-            msg="fail"
-            mcontent=""
-            response={
-                'message':msg,
-                'title':mtitle
-            }
-            return jsonify(response)
-        DUlink=db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
-        # mtime=DUlink.last_watch
-        # 判断用户是否有权限查看该文档
-        # 初步完善
-        # TODO: 目前只有创建者能查看文档(已修正)
-        # TODO: 目前任何参与者都可以查看文档
-        if (document!=None) and (DUlink!=None):
-            msg="success"
-            mtitle=document.title
-            now=datetime.datetime.now()
-            mtime=now
-            db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).update({"last_watch":now})
-            db.session.commit()
-            # DUlink=db.session.query(DocumentUser).filter(and_(DocumentUser.document_id==document.id,DocumentUser.user_id==user.id)).first()
-        else:
-            msg="fail"
-            mtitle=""
-    response={
-        'message':msg,
-        'title':mtitle,
-        'time':mtime
-    }
-    return jsonify(response)
-
->>>>>>> zcy
 # 获取团队所有没有被删除的文档
 @app.route('/api/get_group_docs/',methods=['POST'])
 def get_group_docs():
@@ -808,11 +749,7 @@ def get_group_docs():
     for document in all_document:
         res.append(document_to_content(document))
     return jsonify(res)
-<<<<<<< HEAD
 
-=======
->>>>>>> Stashed changes
->>>>>>> zcy
 
 # 修改文档
 @app.route('/api/modify_doc/', methods=['POST'])
