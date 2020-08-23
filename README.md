@@ -2,12 +2,15 @@
 
 # 石墨烯文档
 
+项目地址：
+
+暂未公布。
+
 
 
 石墨烯文档后端代码
 
 后端代码储存在此处。
-
 
 前端代码网址：
 https://github.com/IAmParasite/graphene-doc-frontend
@@ -15,6 +18,12 @@ https://github.com/IAmParasite/graphene-doc-frontend
 后端代码网址：
 
 https://github.com/Coach257/graphene-doc-server
+
+
+
+项目协作功能视频展示：
+
+https://www.bilibili.com/video/BV1Yz4y1f7SG
 
 
 
