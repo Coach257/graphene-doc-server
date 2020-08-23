@@ -26,7 +26,7 @@ https://github.com/Coach257/graphene-doc-server
 
 编辑界面分为两个区域：编辑区和左侧边栏。
 
-![image-20200823084300195](/Users/apple/Library/Application Support/typora-user-images/image-20200823084300195.png)
+![image](https://github.com/Coach257/graphene-doc-server/blob/master/READMEimage/WeChat9677db5284e153946a05948a32737e76.png)
 
 
 
