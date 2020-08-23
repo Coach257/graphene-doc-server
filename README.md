@@ -44,7 +44,7 @@ https://github.com/Coach257/graphene-doc-server
 
 已经发送的评论可以在评论区下方查看，已发表的评论按照发表时间的顺序依次排列。
 
-<img src="/Users/apple/Library/Application Support/typora-user-images/image-20200823084200515.png" alt="image-20200823084200515"  />
+![image](https://github.com/Coach257/graphene-doc-server/blob/master/READMEimage/WeChat052c99bf6178a79297ecde069dc47dc4.png)
 
 #### 历史
 
@@ -60,13 +60,15 @@ https://github.com/Coach257/graphene-doc-server
 
 如果当前用户有对于当前文档的分享权限，则可以进行分享。
 
-<img src="/Users/apple/Library/Application Support/typora-user-images/image-20200823095245764.png" alt="image-20200823095245764" style="zoom: 33%;" />
+![image](https://github.com/Coach257/graphene-doc-server/blob/master/READMEimage/WeChat78ed02960dc3bb7416d68164417d2391.png)
+
+
 
 可以在搜索栏中输入部分关键字，服务器会自动返回含有关键字的用户信息，点击右侧的share按钮就可以将文档分享给他，使其获得进入文档以及相应的编辑、查看、分析等权限。
 
 ### 文档编辑区
 
-![image-20200823100453516](/Users/apple/Library/Application Support/typora-user-images/image-20200823100453516.png)
+![image](https://github.com/Coach257/graphene-doc-server/blob/master/READMEimage/WeChata6ccc1ba2a97933efeee2a489b4498f5.png)
 
 #### 文档标题
 
@@ -88,7 +90,9 @@ https://github.com/Coach257/graphene-doc-server
 
 第一行：
 
-![image-20200823101606901](/Users/apple/Library/Application Support/typora-user-images/image-20200823101606901.png)
+![image](https://github.com/Coach257/graphene-doc-server/blob/master/READMEimage/WeChata04563d836585239b22e2b862cb3448a.png)
+
+
 
 加粗、斜体、标题、下划线、删除线、标记、上标、下标、左对齐、中对齐、右对齐、引用、标号、不可见、全屏、单窗口、双窗口
 
@@ -96,7 +100,9 @@ https://github.com/Coach257/graphene-doc-server
 
 第二行：
 
-![image-20200823101907345](/Users/apple/Library/Application Support/typora-user-images/image-20200823101907345.png)
+![image](https://github.com/Coach257/graphene-doc-server/blob/master/READMEimage/WeChat862962575ae76887b4cf5e32fabb0805.png)
+
+
 
 标号、链接、图片、代码段、表格、回撤、重做、删除、保存
 
